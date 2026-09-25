@@ -1,10 +1,10 @@
-# Bitlang compiled Open Semantic Decisions
+# Bitlang Low Open Semantic Decisions
 
 Status: Draft
 
 This document lists only decisions that cannot be inherited mechanically from ordinary C behavior and are not already fixed by Bitlang / Bitlang Preprocessed semantics.
 
-C-compatible syntax and behavior do not need a separate Bitlang compiled decision unless they conflict with Bitlang semantics.
+C-compatible syntax and behavior do not need a separate Bitlang Low decision unless they conflict with Bitlang semantics.
 
 ## 1. Struct layout and alignment
 
@@ -12,7 +12,7 @@ Ordinary struct syntax may follow C, but deterministic Bitlang semantics still n
 
 The specification must decide:
 
-- whether ordinary compiled structs have target-defined or Bitlang-defined layout,
+- whether ordinary Bitlang Low structs have target-defined or Bitlang-defined layout,
 - alignment rules,
 - padding visibility,
 - packed/exact-layout representation,
@@ -21,7 +21,7 @@ The specification must decide:
 
 ## 2. Enum underlying representation
 
-C-like enum syntax exists, but Bitlang compiled still needs a deterministic rule for the underlying numeric type when layout or ABI matters.
+C-like enum syntax exists, but Bitlang Low still needs a deterministic rule for the underlying numeric type when layout or ABI matters.
 
 Options include requiring an explicit canonical Bitlang integer type, inferring the smallest representable Bitlang integer type, or adopting another fixed rule.
 
@@ -68,13 +68,13 @@ The C backend must not simply inherit whichever initialization ordering happens 
 
 ## 6. Concurrency and atomics
 
-If Bitlang compiled exposes `volatile`, atomic operations, threads, or shared-memory concurrency, their memory model must be defined explicitly.
+If Bitlang Low exposes `volatile`, atomic operations, threads, or shared-memory concurrency, their memory model must be defined explicitly.
 
 Ordinary C syntax may be reused where compatible, but the Bitlang contract must establish which C/C11/C23 memory-model behavior is intentionally inherited and which behavior is restricted.
 
 ## 7. Exact Ptr/Ref textual representation
 
-The semantic distinction between `Ptr<T>` and `Ref<T>` is fixed, but Bitlang compiled still needs a final textual representation if both remain visible after lowering.
+The semantic distinction between `Ptr<T>` and `Ref<T>` is fixed, but Bitlang Low still needs a final textual representation if both remain visible after lowering.
 
 Possible approaches include:
 
