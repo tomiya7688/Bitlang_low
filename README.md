@@ -1,10 +1,10 @@
-# Bitlang compiled
+# Bitlang Low
 
-Bitlang compiled is the low-level, C-like language used after `Bitlang preprocessed` in the Bitlang toolchain.
+Bitlang Low is the low-level, C-like language used after `Bitlang preprocessed` in the Bitlang toolchain.
 
 Its primary goals are:
 
-- provide a stable low-level representation for the Bitlang compiler,
+- provide a stable low-level language boundary between the Bitlang Lowerer and backends,
 - preserve a structure that can be translated to C mechanically,
 - remain suitable for optimization and static analysis,
 - remove high-level ambiguity before backend translation,
@@ -14,23 +14,23 @@ Its primary goals are:
 
 ```text
 Bitlang source
-    -> Bitlang preprocessor
-Bitlang preprocessed
-    -> static analysis / lowering
-Bitlang compiled
-    -> optimization / backend translation
+    -> Bitlang Preprocessor
+Bitlang Preprocessed
+    -> Bitlang Lowerer
+Bitlang Low
+    -> Bitlang C Backend / other backends
 C / other backend representations
 ```
 
 ## Design rule
 
-Where a C language construct can be adopted without conflicting with Bitlang compiled's safety, determinism, or backend requirements, Bitlang compiled follows the C form directly.
+Where a C language construct can be adopted without conflicting with Bitlang Low's safety, determinism, or backend requirements, Bitlang Low follows the C form directly.
 
 Differences from C are specified explicitly rather than inventing alternative syntax unnecessarily.
 
 Bitlang-native semantics are not weakened merely to fit a C primitive or C undefined/implementation-defined behavior. When direct C representation is insufficient, the backend must use explicit lowering, checks, helpers, carrier representations, or another defined mechanism.
 
-A major intentional exception is the numeric type system. Bitlang compiled retains Bitlang's canonical radix-and-bit-width type representation, such as `Int10x32` and `Uint10x64`, rather than reverting to target-dependent C primitive widths.
+A major intentional exception is the numeric type system. Bitlang Low retains Bitlang's canonical radix-and-bit-width type representation, such as `Int10x32` and `Uint10x64`, rather than reverting to target-dependent C primitive widths.
 
 ## Specification
 
