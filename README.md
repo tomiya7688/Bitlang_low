@@ -1,6 +1,6 @@
 # Bitlang Low
 
-Bitlang Low is the low-level, C-like language used after `Bitlang preprocessed` in the Bitlang toolchain.
+Bitlang Low is the low-level, C-like language used after `Bitlang Explicit` in the Bitlang toolchain.
 
 Its primary goals are:
 
@@ -15,7 +15,7 @@ Its primary goals are:
 ```text
 Bitlang source
     -> Bitlang Preprocessor
-Bitlang Preprocessed
+Bitlang Explicit
     -> Bitlang Lowerer
 Bitlang Low
     -> Bitlang C Backend / other backends
