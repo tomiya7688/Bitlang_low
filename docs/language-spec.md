@@ -443,7 +443,7 @@ The exact source spelling of unsafe operations is specified separately. The sema
 
 An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang Low operations remain governed by the defined-behavior and default-error rules.
 
-The exact textual spelling used for `Ptr<T>` versus `Ref<T>` inside canonical compiled output remains a separate syntax decision.
+The exact textual spelling used for `Ptr<T>` versus `Ref<T>` inside canonical Bitlang Low output remains a separate syntax decision.
 
 ## 18. Function pointers
 
@@ -505,7 +505,7 @@ Representation-changing pulse operations remain semantically distinct from casts
 
 Bitlang Low separates semantic bit width from backend storage size.
 
-`sizeof(type-or-value)` reports the physical storage size in bytes for the selected compiled target/backend representation. It is therefore suitable for C-compatible layout, allocation, pointer stepping, ABI work, and other operations that depend on actual storage.
+`sizeof(type-or-value)` reports the physical storage size in bytes for the selected backend representation. It is therefore suitable for C-compatible layout, allocation, pointer stepping, ABI work, and other operations that depend on actual storage.
 
 `bitsizeof(type-or-value)` reports the semantic Bitlang bit width when the type has a defined semantic bit width.
 
@@ -518,9 +518,9 @@ sizeof(Int10x24)    == 4   // when the selected backend stores it in a 32-bit ca
 
 The two sizes are intentionally allowed to differ.
 
-The programmer or generated compiled code may use whichever measurement is appropriate to the operation. Backend lowering must not substitute one for the other.
+The programmer or generated Bitlang Low code may use whichever measurement is appropriate to the operation. Backend lowering must not substitute one for the other.
 
-Alignment is a storage/layout property rather than a semantic numeric-width property. Any `alignof`-equivalent operation therefore reports the alignment of the selected compiled target representation.
+Alignment is a storage/layout property rather than a semantic numeric-width property. Any `alignof`-equivalent operation therefore reports the alignment of the selected backend representation.
 
 For types that do not define a meaningful semantic bit width, `bitsizeof` is invalid unless that type's own Bitlang specification defines what semantic bit size means.
 
