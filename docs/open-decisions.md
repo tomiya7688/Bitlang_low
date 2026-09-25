@@ -47,7 +47,7 @@ Internal compilation does not need to use the external ABI representation unless
 
 Bitlang defines `Str` and bounded string forms independently from C strings.
 
-Compiled still needs a concrete low-level semantic contract for:
+Bitlang Low still needs a concrete low-level semantic contract for:
 
 - character encoding,
 - length unit,
@@ -82,7 +82,7 @@ Possible approaches include:
 - use C-like pointer spelling plus an explicit reference qualifier,
 - erase `Ref<T>` only after all reference guarantees have been statically discharged.
 
-This is primarily a compiled-language syntax/IR readability decision; it must not change the already-defined semantics.
+This is primarily a Bitlang Low syntax/IR readability decision; it must not change the already-defined semantics.
 
 ## 8. Explicit layout / bit-field facility
 
