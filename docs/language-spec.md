@@ -1,20 +1,20 @@
-# Bitlang compiled Language Specification
+# Bitlang Low Language Specification
 
 Status: Draft
 
-Bitlang compiled is a C-like low-level language positioned between `Bitlang preprocessed` and backend representations such as C.
+Bitlang Low is a C-like low-level language positioned between `Bitlang preprocessed` and backend representations such as C.
 
-The baseline rule is simple: when ordinary C syntax and semantics can be reused without conflicting with Bitlang compiled requirements, they are reused directly.
+The baseline rule is simple: when ordinary C syntax and semantics can be reused without conflicting with Bitlang Low requirements, they are reused directly.
 
 This document records the C-compatible surface and the Bitlang-specific rules that must survive lowering.
 
-A foundational exception is the numeric type system: Bitlang compiled inherits Bitlang's canonical numeric type model, including integer and floating-point types, instead of redefining numeric semantics around C primitive types. See [`numeric-types.md`](numeric-types.md).
+A foundational exception is the numeric type system: Bitlang Low inherits Bitlang's canonical numeric type model, including integer and floating-point types, instead of redefining numeric semantics around C primitive types. See [`numeric-types.md`](numeric-types.md).
 
 Bitlang-specific ownership, lifetime, property, reference, class/module, and functional lowering rules are defined in [`semantic-lowering.md`](semantic-lowering.md). Remaining non-C decisions are tracked in [`open-decisions.md`](open-decisions.md).
 
 ## 1. Translation unit
 
-A Bitlang compiled source file is a translation unit containing declarations and definitions in a C-like form.
+A Bitlang Low source file is a translation unit containing declarations and definitions in a C-like form.
 
 Statements are terminated by `;` unless the grammar of a compound construct provides its own block termination.
 
@@ -27,7 +27,7 @@ Blocks use braces:
 }
 ```
 
-Bitlang source preprocessing has already completed before this stage. Bitlang preprocessor functions are not part of Bitlang compiled semantics.
+Bitlang source preprocessing has already completed before this stage. Bitlang preprocessor functions are not part of Bitlang Low semantics.
 
 ## 2. Comments
 
@@ -51,7 +51,7 @@ _temp2
 
 Semantic identifier identity remains case-insensitive as inherited from Bitlang Preprocessed. `_` remains significant.
 
-Therefore capitalization alone must not create a distinct Bitlang compiled symbol. Compiler-generated output should use one deterministic canonical spelling, and C backend name mangling must avoid collisions when emitting into C's case-sensitive identifier namespace.
+Therefore capitalization alone must not create a distinct Bitlang Low symbol. Compiler-generated output should use one deterministic canonical spelling, and C backend name mangling must avoid collisions when emitting into C's case-sensitive identifier namespace.
 
 String and character contents remain case-sensitive and are not subject to identifier normalization.
 
@@ -77,7 +77,7 @@ Compiler output may choose to emit one declaration per variable for simpler anal
 
 ### 4.1 Canonical numeric types
 
-Numeric type representation is inherited from Bitlang rather than redefined by Bitlang compiled.
+Numeric type representation is inherited from Bitlang rather than redefined by Bitlang Low.
 
 For numeric types carrying both radix and bit width, the canonical form is:
 
@@ -96,17 +96,17 @@ Float10x32
 Float10x64
 ```
 
-The bit width and radix are explicit type information. Signedness is explicit for integer families. Bitlang compiled must not replace this information with target-dependent C types such as plain `int`, `long`, `float`, or `double`.
+The bit width and radix are explicit type information. Signedness is explicit for integer families. Bitlang Low must not replace this information with target-dependent C types such as plain `int`, `long`, `float`, or `double`.
 
-Source shorthand has already been resolved before compiler-generated Bitlang compiled is produced. Therefore source-level shorthand such as `int` is represented by its canonical Bitlang type, normally `Int10x32`, before this stage.
+Source shorthand has already been resolved before compiler-generated Bitlang Low is produced. Therefore source-level shorthand such as `int` is represented by its canonical Bitlang type, normally `Int10x32`, before this stage.
 
 Different radix types are distinct. No C integer promotions, usual arithmetic conversions, or ordinary implicit numeric conversions are inherited. Widening, narrowing, signedness changes, radix changes, and integer/floating-point conversions must be explicit.
 
-Bitlang's distinction between cast and pulse remains valid in Bitlang compiled. The compiled representation preserves the already-resolved conversion operation rather than asking a C backend to infer one.
+Bitlang's distinction between cast and pulse remains valid in Bitlang Low. The Bitlang Low representation preserves the already-resolved conversion operation rather than asking a C backend to infer one.
 
 Numeric overflow behavior is inherited from Bitlang and is an error by default unless an explicit operation specifies another policy.
 
-Floating-point types follow the same inheritance rule as integer types. Their canonical Bitlang type and already-defined semantics are preserved through Bitlang compiled; `float`, `double`, and related C types are backend representation choices only.
+Floating-point types follow the same inheritance rule as integer types. Their canonical Bitlang type and already-defined semantics are preserved through Bitlang Low; `float`, `double`, and related C types are backend representation choices only.
 
 ## 5. Assignment
 
@@ -123,7 +123,7 @@ value %= 2;
 
 Compound assignment may be normalized into explicit assignment and operation form.
 
-Compiler-generated compiled output is permitted to prefer the already-expanded form inherited from Bitlang Preprocessed rather than reintroducing source-level sugar.
+Compiler-generated Bitlang Low output is permitted to prefer the already-expanded form inherited from Bitlang Preprocessed rather than reintroducing source-level sugar.
 
 ## 6. Arithmetic and comparison operators
 
@@ -146,7 +146,7 @@ Bitwise and logical operators are also written in the C form:
 
 Operand types must already satisfy Bitlang's explicit compatibility rules. C's implicit integer promotions and target-dependent conversion rules do not apply.
 
-Bitlang compiled must not depend on C's unspecified operand evaluation order. When side effects make order observable, lowering must sequence them explicitly using statements and compiler-generated temporaries before C emission. See [`semantic-lowering.md`](semantic-lowering.md).
+Bitlang Low must not depend on C's unspecified operand evaluation order. When side effects make order observable, lowering must sequence them explicitly using statements and compiler-generated temporaries before C emission. See [`semantic-lowering.md`](semantic-lowering.md).
 
 Shift operators act on the value's fixed semantic bit width rather than on a C carrier width.
 
@@ -164,7 +164,7 @@ A C backend must reproduce these semantics explicitly and must not rely on C und
 
 ## 7. Increment and decrement
 
-C-style increment and decrement syntax may be accepted by a Bitlang compiled parser where defined for the type:
+C-style increment and decrement syntax may be accepted by a Bitlang Low parser where defined for the type:
 
 ```c
 i++;
@@ -173,7 +173,7 @@ i--;
 --i;
 ```
 
-However, Bitlang source and canonical preprocessing do not rely on increment/decrement value-expression semantics. Compiler-generated compiled output may normalize mutation into ordinary explicit arithmetic assignment and need not emit these forms.
+However, Bitlang source and canonical preprocessing do not rely on increment/decrement value-expression semantics. Compiler-generated Bitlang Low output may normalize mutation into ordinary explicit arithmetic assignment and need not emit these forms.
 
 ## 8. Functions
 
@@ -441,7 +441,7 @@ Unsafe does not silently weaken `Ref<T>`; code must use the appropriate raw-poin
 
 The exact source spelling of unsafe operations is specified separately. The semantic requirement is that the unsafe intent is explicit and cannot arise accidentally from ordinary C-like syntax.
 
-An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang compiled operations remain governed by the defined-behavior and default-error rules.
+An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang Low operations remain governed by the defined-behavior and default-error rules.
 
 The exact textual spelling used for `Ptr<T>` versus `Ref<T>` inside canonical compiled output remains a separate syntax decision.
 
@@ -503,7 +503,7 @@ Representation-changing pulse operations remain semantically distinct from casts
 
 ## 23. sizeof / bitsizeof / alignment
 
-Bitlang compiled separates semantic bit width from backend storage size.
+Bitlang Low separates semantic bit width from backend storage size.
 
 `sizeof(type-or-value)` reports the physical storage size in bytes for the selected compiled target/backend representation. It is therefore suitable for C-compatible layout, allocation, pointer stepping, ABI work, and other operations that depend on actual storage.
 
@@ -526,7 +526,7 @@ For types that do not define a meaningful semantic bit width, `bitsizeof` is inv
 
 ## 24. C-compatible lowering principle
 
-A valid Bitlang compiled construct should, where possible, translate to straightforward C without reconstructing lost high-level semantics.
+A valid Bitlang Low construct should, where possible, translate to straightforward C without reconstructing lost high-level semantics.
 
 For example, a high-level class method:
 
@@ -534,7 +534,7 @@ For example, a high-level class method:
 player.damage(amount)
 ```
 
-may be represented in Bitlang compiled approximately as:
+may be represented in Bitlang Low approximately as:
 
 ```c
 struct Player {
@@ -554,7 +554,7 @@ The exact compiler-generated identifier names are an implementation concern and 
 
 ## 25. Property and state lowering
 
-Bitlang Preprocessed contains the final resolved semantic property state. Bitlang compiled does not need to preserve every property name textually after its constraints have been validated and lowered.
+Bitlang Preprocessed contains the final resolved semantic property state. Bitlang Low does not need to preserve every property name textually after its constraints have been validated and lowered.
 
 Important inherited rules include:
 
@@ -577,7 +577,7 @@ The compiler must reject double destruction, invalid non-owner release, release 
 
 ## 26. High-level construct elimination
 
-Bitlang compiled is procedural and low-level. The C backend must not be responsible for reconstructing high-level language meaning.
+Bitlang Low is procedural and low-level. The C backend must not be responsible for reconstructing high-level language meaning.
 
 Before backend emission:
 
@@ -592,7 +592,7 @@ Module/class ownership needed for symbol identity is encoded into generated name
 
 ## 27. Runtime failure model
 
-Runtime-detectable violations of ordinary Bitlang compiled operations use a common **trap** failure model by default.
+Runtime-detectable violations of ordinary Bitlang Low operations use a common **trap** failure model by default.
 
 Examples include:
 
@@ -610,23 +610,23 @@ Operations for which the program intentionally wants to handle failure must use 
 
 The trapping and checked forms are semantically distinct. The backend must not silently convert an ordinary trapping operation into error-return control flow, or a checked operation into a trap.
 
-The exact textual spelling of each checked operation may be defined with that operation family; the common rule is that recoverable failure must be explicit in Bitlang compiled rather than changing the default operation semantics.
+The exact textual spelling of each checked operation may be defined with that operation family; the common rule is that recoverable failure must be explicit in Bitlang Low rather than changing the default operation semantics.
 
 A C backend may implement the trap through a runtime helper, target trap instruction/intrinsic, or equivalent immediate-failure mechanism, provided the observable Bitlang behavior is preserved.
 
 ## 28. C undefined-behavior policy
 
-Bitlang compiled does not inherit C undefined behavior as ordinary language behavior.
+Bitlang Low does not inherit C undefined behavior as ordinary language behavior.
 
 If an operation would require the generated C program to enter undefined behavior, that operation is an error by default.
 
 This includes cases that can be proven statically and cases that only become invalid for particular runtime values. Static violations are compile errors. Dynamic violations must be guarded by generated checks when the operation is otherwise permitted to execute.
 
-An exception may exist only when the behavior is intentionally useful for low-level programming and Bitlang compiled explicitly defines an unsafe or backend-specific operation for it. Such an exception must be opt-in and documented; accidental reliance on C undefined behavior is never valid lowering.
+An exception may exist only when the behavior is intentionally useful for low-level programming and Bitlang Low explicitly defines an unsafe or backend-specific operation for it. Such an exception must be opt-in and documented; accidental reliance on C undefined behavior is never valid lowering.
 
 Therefore, the C backend may not use undefined behavior as an optimization assumption for a Bitlang operation whose semantics require a defined result or defined error.
 
-This policy does not automatically adopt C implementation-defined behavior either. Where implementation-defined C behavior is observable and Bitlang has not explicitly adopted it, Bitlang compiled must either define its own behavior, lower through a deterministic helper/representation, or reject the operation.
+This policy does not automatically adopt C implementation-defined behavior either. Where implementation-defined C behavior is observable and Bitlang has not explicitly adopted it, Bitlang Low must either define its own behavior, lower through a deterministic helper/representation, or reject the operation.
 
 ## 29. Remaining Bitlang-specific decisions
 
