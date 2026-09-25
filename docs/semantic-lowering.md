@@ -166,7 +166,7 @@ The final textual spelling used to distinguish Ptr and Ref inside Bitlang Low re
 
 Bitlang's static-retention semantics and C's file-scope internal-linkage use of `static` are not the same concept.
 
-When a compiled construct represents Bitlang static retention, the backend must preserve the required storage lifetime.
+When a Bitlang Low construct represents Bitlang static retention, the backend must preserve the required storage lifetime.
 
 The backend must not infer that the symbol should have C internal linkage solely because the Bitlang value has static retention. Linkage/export visibility is a separate concern and must be lowered separately.
 
