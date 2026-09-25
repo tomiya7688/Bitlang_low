@@ -84,7 +84,25 @@ A `Borrowed` path must not independently destroy the owned resource unless an ex
 
 The variable slot or handle may remain in compiled form after the underlying resource has been released when doing so is required for control flow or diagnostics.
 
-## 8. Move and copy
+## 8. Destruction and finalization safety
+
+The compiler must treat destruction safety as a mandatory validation gate.
+
+The origin of an operation is irrelevant: handwritten input, language-adapter output, preprocessor-generated cleanup, and compiler-generated cleanup are checked under the same rules.
+
+Compilation must fail when the compiler can prove that a release, finalizer/destructor execution, or owner teardown would violate resolved Bitlang semantics. This includes, at minimum:
+
+- double release or double finalization of the same live resource;
+- release through an `Unreleasable` or non-owning path without a valid ownership transfer;
+- destruction that invalidates a still-live borrow/reference;
+- destruction inconsistent with the resolved lifetime or finalization trigger;
+- generated control flow containing multiple executable cleanup paths for the same resource.
+
+The compiler must not assume that a transformation is safe merely because it was produced by the Bitlang preprocessor or another trusted tool. Fully explicit Preprocessed input reduces ambiguity; it does not remove the compiler's obligation to reject provably invalid destruction.
+
+Unsafe/raw-pointer facilities do not automatically waive ownership/release/finalization invariants. A separate explicitly specified destruction model would be required to permit behavior that ordinary Bitlang destruction rules reject.
+
+## 9. Move and copy
 
 Copy and move capability are distinct from ownership.
 
@@ -96,7 +114,7 @@ Compiler-generated compiled output must not contain an ordinary read, second mov
 
 Move-state metadata may be removed after the compiler has transformed the program into explicit transfers and proven that no invalid source use remains.
 
-## 9. Initialization state
+## 10. Initialization state
 
 An `Uninitialized` declaration must never be read as a value.
 
@@ -104,7 +122,7 @@ The compiler must lower only valid initialization transitions into ordinary stor
 
 After definite initialization has been proven, initialization-state metadata may be discarded.
 
-## 10. Nullability and optionality
+## 11. Nullability and optionality
 
 Nullability and presence are separate semantics and must not be collapsed into one C pointer convention.
 
@@ -122,7 +140,7 @@ Absence is not the same as null. In particular, `Optional nullable T` must be ca
 
 The backend may choose any representation that preserves those states.
 
-## 11. Lifetime and borrow state
+## 12. Lifetime and borrow state
 
 Lifetime properties and borrow state are validation inputs, not necessarily permanent runtime data.
 
@@ -132,7 +150,7 @@ Conflicting shared/exclusive borrows, release while an incompatible borrow remai
 
 After these constraints have been established, analysis-only lifetime and borrow metadata may be removed. See [`borrow-state-lowering.md`](borrow-state-lowering.md).
 
-## 12. Ptr and Ref
+## 13. Ptr and Ref
 
 Bitlang `Ptr<T>` and `Ref<T>` are semantically distinct even if a C backend eventually represents both using pointer-shaped storage.
 
@@ -144,7 +162,7 @@ Lowering may erase the Ptr/Ref distinction only after all `Ref<T>` guarantees ha
 
 The final textual spelling used to distinguish Ptr and Ref inside Bitlang compiled remains a separate syntax decision.
 
-## 13. Static retention is not C internal linkage
+## 14. Static retention is not C internal linkage
 
 Bitlang's static-retention semantics and C's file-scope internal-linkage use of `static` are not the same concept.
 
@@ -152,7 +170,7 @@ When a compiled construct represents Bitlang static retention, the backend must 
 
 The backend must not infer that the symbol should have C internal linkage solely because the Bitlang value has static retention. Linkage/export visibility is a separate concern and must be lowered separately.
 
-## 14. Class, module, and method lowering
+## 15. Class, module, and method lowering
 
 High-level class and module containers do not need to survive as runtime language constructs in Bitlang compiled.
 
@@ -169,7 +187,7 @@ Module and class ownership information that is still needed for symbol identity 
 
 Nested `struct` values do not need to be flattened field-by-field merely because a class was lowered. Preserving a struct as a struct is the default acceptable representation. Full field flattening is an optimization and is legal only when layout, aliasing, and observable behavior are preserved.
 
-## 15. Functional constructs
+## 16. Functional constructs
 
 Bitlang compiled is procedural and must not require a backend to reconstruct high-level functional-language semantics.
 
@@ -183,13 +201,13 @@ Pattern matching and other high-level control constructs must be reduced to ordi
 
 Unresolved source-level generics, currying syntax, or other high-level functional sugar must not be left for the C backend to interpret.
 
-## 16. No Bitlang preprocessor at the compiled stage
+## 17. No Bitlang preprocessor at the compiled stage
 
 Bitlang preprocessor functions have already executed before Bitlang Preprocessed is produced and are not part of Bitlang compiled runtime or compile-time semantics.
 
 A C backend may generate C preprocessor directives as an implementation technique, but those directives are backend output and are not Bitlang compiled preprocessing semantics.
 
-## 17. C backend safety rule
+## 18. C backend safety rule
 
 A behavior that is defined by Bitlang must not be lowered into C in a form whose correctness depends on C undefined behavior.
 
