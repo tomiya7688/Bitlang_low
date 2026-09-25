@@ -359,21 +359,91 @@ If the index is only known at runtime, lowering must preserve a bounds check bef
 
 The C backend must not emit unchecked indexing for an access whose validity has not already been proven.
 
-## 17. Pointers and references
+## 17. Pointers, references, Address, and unsafe operations
 
 C-like pointer-shaped low-level representation may be used where appropriate.
 
 Bitlang `Ptr<T>` and `Ref<T>` remain semantically distinct until their guarantees have been discharged by lowering.
 
-`Ptr<T>` is the raw low-level pointer form. Its resolved semantics may permit null, reassignment, pointer arithmetic, and raw-address operations.
+### 17.1 Ref<T>
 
-`Ref<T>` is the safe reference form. It is non-null, cannot participate in pointer arithmetic, cannot be rebound after binding, and must not outlive its referent.
+`Ref<T>` is the safe reference form.
 
-A C backend may eventually represent both with pointer-shaped storage, but it must not reintroduce an operation that violates the already-validated `Ref<T>` guarantees.
+It is non-null, cannot participate in pointer arithmetic, cannot be rebound after binding, and must not outlive its referent.
 
-The exact textual spelling used for Ptr versus Ref inside canonical compiled output remains a separate syntax decision.
+A C backend may eventually represent `Ref<T>` with pointer-shaped storage, but it must not reintroduce an operation that violates the already-validated reference guarantees.
 
-Raw-pointer invalid-access/provenance behavior remains a separate semantic decision.
+### 17.2 Ptr<T>
+
+`Ptr<T>` is the low-level raw-pointer form. It may be null and may be copied or reassigned according to the declaration's ordinary Bitlang properties.
+
+The following are ordinary pointer operations and do not require an unsafe operation merely because the value is a `Ptr<T>`:
+
+- pointer creation from a valid object/address-producing operation,
+- copy and reassignment,
+- null comparison,
+- equality and inequality comparison.
+
+Dereference is an ordinary operation only when the compiler can prove the pointer refers to a live object of a compatible type with sufficient alignment for the access.
+
+If those conditions cannot be proven, dereference requires an explicit unsafe operation.
+
+A pointer value that is statically known to be null, dangling, one-past, misaligned for the requested access, or otherwise invalid for dereference is rejected as an ordinary dereference.
+
+### 17.3 Pointer arithmetic
+
+Ordinary pointer arithmetic is permitted only when the compiler can prove that the result remains within the same allocated object/array, or is the one-past position associated with that same region.
+
+A one-past pointer may participate in allowed pointer calculations/comparisons but is not valid for dereference.
+
+Pointer arithmetic that cannot satisfy or prove the ordinary same-region rule requires an explicit unsafe operation.
+
+Relational pointer ordering is ordinary only when the compared pointers are proven to belong to the same allocation/array region. Ordering unrelated pointers directly is not an ordinary `Ptr<T>` operation.
+
+Code that intentionally wants to compare raw numeric addresses must first convert the pointer explicitly to `Address`.
+
+### 17.4 Address
+
+`Address` is the dedicated low-level type for an address value.
+
+Pointer/integer conversion is not implicit and an ordinary Bitlang numeric integer is not automatically interchangeable with `Ptr<T>`.
+
+A pointer may be explicitly converted to `Address` when raw-address inspection/manipulation is required.
+
+An `Address` may be explicitly converted to `Ptr<T>`, but the resulting pointer receives no compiler safety guarantee merely from that conversion. In particular, liveness, compatible object type, alignment, range, and provenance may be unknown.
+
+Dereferencing such a pointer therefore requires either later proof that re-establishes the ordinary safety conditions or an explicit unsafe operation.
+
+Address width and backend representation follow the selected target. A C backend may use `uintptr_t`, an equivalent implementation-defined carrier, or another representation that preserves the target address value.
+
+### 17.5 Provenance and safety metadata
+
+Detailed provenance is compiler analysis metadata rather than a source-visible semantic type hierarchy.
+
+The compiler may track allocation identity, lifetime, range, alignment, and related pointer facts to prove that an operation is ordinary-safe.
+
+Operations that destroy or obscure those facts, such as converting through raw `Address`, may cause the resulting pointer to lose ordinary safety proof without changing its `Ptr<T>` type.
+
+### 17.6 Explicit unsafe pointer operations
+
+Unsafe pointer operations are opt-in exceptions to the ordinary proof requirements.
+
+They are intended for low-level tasks such as operating-system interfaces, memory-mapped hardware, foreign ABIs, allocators, custom memory managers, and similar code where the compiler cannot prove the required pointer facts.
+
+Unsafe may permit operations such as:
+
+- dereference without compiler proof of liveness/range/alignment/provenance,
+- pointer arithmetic whose same-allocation bounds cannot be proven,
+- explicit raw-address reconstruction,
+- explicit unaligned load/store operations where supported by the target.
+
+Unsafe does not silently weaken `Ref<T>`; code must use the appropriate raw-pointer/address operation instead.
+
+The exact source spelling of unsafe operations is specified separately. The semantic requirement is that the unsafe intent is explicit and cannot arise accidentally from ordinary C-like syntax.
+
+An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang compiled operations remain governed by the defined-behavior and default-error rules.
+
+The exact textual spelling used for `Ptr<T>` versus `Ref<T>` inside canonical compiled output remains a separate syntax decision.
 
 ## 18. Function pointers
 
@@ -554,7 +624,6 @@ This policy does not automatically adopt C implementation-defined behavior eithe
 
 The remaining decisions that cannot simply inherit C behavior are tracked in [`open-decisions.md`](open-decisions.md). The major unresolved areas are:
 
-- raw-pointer invalid-access, provenance, and unsafe-operation boundaries,
 - observable struct layout/alignment and explicit packed layout,
 - deterministic enum underlying representation,
 - external C/native ABI and symbol contract,
