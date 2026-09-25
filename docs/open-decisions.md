@@ -6,20 +6,7 @@ This document lists only decisions that cannot be inherited mechanically from or
 
 C-compatible syntax and behavior do not need a separate Bitlang Low decision unless they conflict with Bitlang semantics.
 
-## 1. Struct layout and alignment
-
-Ordinary struct syntax may follow C, but deterministic Bitlang semantics still need rules for cases where physical layout is observable.
-
-The specification must decide:
-
-- whether ordinary Bitlang Low structs have target-defined or Bitlang-defined layout,
-- alignment rules,
-- padding visibility,
-- packed/exact-layout representation,
-- interaction with arbitrary-bit-width numeric types,
-- whether layout may change between backend targets when no explicit ABI/layout contract is requested.
-
-## 2. Enum underlying representation
+## 1. Enum underlying representation
 
 C-like enum syntax exists, but Bitlang Low still needs a deterministic rule for the underlying numeric type when layout or ABI matters.
 
@@ -27,7 +14,7 @@ Options include requiring an explicit canonical Bitlang integer type, inferring 
 
 The backend must not silently choose a different semantic range merely because a C compiler chooses a particular enum representation.
 
-## 3. External ABI and symbol contract
+## 2. External ABI and symbol contract
 
 Internal generated code may use backend-private representations, but interoperability with C or other native code requires explicit rules for:
 
@@ -43,7 +30,7 @@ Internal generated code may use backend-private representations, but interoperab
 
 Internal compilation does not need to use the external ABI representation unless a symbol crosses an ABI boundary.
 
-## 4. Strings and characters
+## 3. Strings and characters
 
 Bitlang defines `Str` and bounded string forms independently from C strings.
 
@@ -60,19 +47,19 @@ Bitlang Low still needs a concrete low-level semantic contract for:
 
 This must be decided before C ABI mapping can be stable.
 
-## 5. Static/module initialization order
+## 4. Static/module initialization order
 
 Static and module lifetime are defined semantically, but initialization/destruction order across declarations and modules still needs a deterministic rule.
 
 The C backend must not simply inherit whichever initialization ordering happens to result from translation-unit or linker behavior when Bitlang observable behavior depends on the order.
 
-## 6. Concurrency and atomics
+## 5. Concurrency and atomics
 
 If Bitlang Low exposes `volatile`, atomic operations, threads, or shared-memory concurrency, their memory model must be defined explicitly.
 
 Ordinary C syntax may be reused where compatible, but the Bitlang contract must establish which C/C11/C23 memory-model behavior is intentionally inherited and which behavior is restricted.
 
-## 7. Exact Ptr/Ref textual representation
+## 6. Exact Ptr/Ref textual representation
 
 The semantic distinction between `Ptr<T>` and `Ref<T>` is fixed, but Bitlang Low still needs a final textual representation if both remain visible after lowering.
 
@@ -84,7 +71,7 @@ Possible approaches include:
 
 This is primarily a Bitlang Low syntax/IR readability decision; it must not change the already-defined semantics.
 
-## 8. Explicit layout / bit-field facility
+## 7. Explicit layout / bit-field facility
 
 Ordinary arbitrary-bit-width numeric values should not be represented as C bit-fields merely because their semantic width is unusual.
 
