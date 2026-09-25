@@ -512,7 +512,31 @@ Before backend emission:
 
 Module/class ownership needed for symbol identity is encoded into generated names or explicit symbol metadata.
 
-## 27. C undefined-behavior policy
+## 27. Runtime failure model
+
+Runtime-detectable violations of ordinary Bitlang compiled operations use a common **trap** failure model by default.
+
+Examples include:
+
+- numeric overflow where the operation uses the default checked-overflow policy,
+- failed checked conversions when used in trapping form,
+- runtime array-bounds violations,
+- invalid dynamic shift counts,
+- other runtime semantic guards inserted by lowering.
+
+If the violation can be proven statically, compilation fails instead; a trap is not emitted for a program that is already known to be invalid.
+
+A trap terminates normal program execution immediately. It is not ordinary error propagation and does not silently produce a fallback value.
+
+Operations for which the program intentionally wants to handle failure must use an explicit checked/non-trapping operation. Such an operation returns an explicit success/failure result that can be lowered into an ordinary tagged result value, status plus out-value, or an equivalent backend representation.
+
+The trapping and checked forms are semantically distinct. The backend must not silently convert an ordinary trapping operation into error-return control flow, or a checked operation into a trap.
+
+The exact textual spelling of each checked operation may be defined with that operation family; the common rule is that recoverable failure must be explicit in Bitlang compiled rather than changing the default operation semantics.
+
+A C backend may implement the trap through a runtime helper, target trap instruction/intrinsic, or equivalent immediate-failure mechanism, provided the observable Bitlang behavior is preserved.
+
+## 28. C undefined-behavior policy
 
 Bitlang compiled does not inherit C undefined behavior as ordinary language behavior.
 
@@ -526,11 +550,10 @@ Therefore, the C backend may not use undefined behavior as an optimization assum
 
 This policy does not automatically adopt C implementation-defined behavior either. Where implementation-defined C behavior is observable and Bitlang has not explicitly adopted it, Bitlang compiled must either define its own behavior, lower through a deterministic helper/representation, or reject the operation.
 
-## 28. Remaining Bitlang-specific decisions
+## 29. Remaining Bitlang-specific decisions
 
 The remaining decisions that cannot simply inherit C behavior are tracked in [`open-decisions.md`](open-decisions.md). The major unresolved areas are:
 
-- common runtime failure/trap model for dynamic semantic errors,
 - raw-pointer invalid-access, provenance, and unsafe-operation boundaries,
 - observable struct layout/alignment and explicit packed layout,
 - deterministic enum underlying representation,
