@@ -313,9 +313,59 @@ player_ptr->hp
 
 Bitlang high-level classes may be lowered into one or more `struct` definitions plus ordinary functions.
 
-Nested struct values do not need to be flattened field-by-field. Struct preservation is an acceptable default lowering. Full flattening is an optimization only when layout, aliasing, and observable behavior are preserved.
+Nested struct values do not need to be flattened field-by-field. Struct preservation is an acceptable default lowering.
 
-Physical struct layout and alignment remain separate decisions when they are observable or cross an ABI boundary.
+### 14.1 Ordinary struct layout
+
+Ordinary Bitlang Low structs preserve field declaration order.
+
+Their physical layout is target/backend dependent rather than globally Bitlang-fixed. Layout is computed after each field has been assigned its selected backend storage representation.
+
+For the C backend, ordinary structs follow the selected target C ABI/layout rules for field alignment, inter-field padding, tail padding, and overall struct alignment.
+
+This means the same ordinary Bitlang Low struct is allowed to have different physical sizes, offsets, or alignment on different targets.
+
+The backend must not reorder fields.
+
+### 14.2 Arbitrary-bit-width fields
+
+A field's semantic bit width does not by itself determine how many physical bits it occupies inside an ordinary struct.
+
+For example, if `Int10x24` is represented by a 32-bit carrier on the selected backend, an ordinary struct field of that type participates in layout using that carrier's storage size and alignment rather than being packed into exactly 24 physical bits.
+
+Exact bit packing is a separate explicit-layout concern and is not implied by using an arbitrary-bit-width numeric type.
+
+### 14.3 Padding
+
+Padding inserted by the selected target layout is not part of the semantic value of a struct.
+
+Padding bytes/bits have no stable Bitlang value and must not be used to define ordinary struct equality, hashing, serialization, or other semantic behavior.
+
+Operations that require stable byte-for-byte layout must use an explicit ABI/exact-layout contract rather than relying on incidental ordinary-struct padding.
+
+### 14.4 sizeof, alignof, and field offsets
+
+`sizeof(struct T)`, struct alignment, and field offsets report the selected target/backend physical layout.
+
+They are therefore target-dependent for ordinary structs.
+
+Code that requires these values to remain identical across targets must use an explicit fixed-layout facility.
+
+### 14.5 Explicit alignment requests
+
+A C-compatible explicit alignment request may be used when it does not conflict with Bitlang safety rules.
+
+The selected backend must either satisfy the requested alignment or reject the program for that target.
+
+Reducing alignment below the natural safe alignment, packed storage, exact byte offsets, or exact bit offsets are not ordinary struct behavior and belong to the explicit-layout facility.
+
+### 14.6 ABI and exact-layout boundary
+
+Ordinary struct layout is suitable for internal target-native data and for C interoperability only when the selected C ABI is intentionally the contract.
+
+Protocols, persistent binary formats, memory-mapped hardware, cross-target stable layouts, or other cases requiring exact physical representation must use the separate explicit layout / bit-field facility.
+
+Full field flattening is an optimization only when all struct layout, address, aliasing, `sizeof`, `alignof`, field-offset, and ABI observability is proven irrelevant.
 
 ## 15. enum
 
@@ -632,7 +682,6 @@ This policy does not automatically adopt C implementation-defined behavior eithe
 
 The remaining decisions that cannot simply inherit C behavior are tracked in [`open-decisions.md`](open-decisions.md). The major unresolved areas are:
 
-- observable struct layout/alignment and explicit packed layout,
 - deterministic enum underlying representation,
 - external C/native ABI and symbol contract,
 - Bitlang string/character low-level representation,
