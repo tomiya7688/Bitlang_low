@@ -1,20 +1,20 @@
-# Bitlang compiled Semantic Lowering
+# Bitlang Low Semantic Lowering
 
 Status: Draft / inherited semantic contract
 
-This document defines Bitlang-specific semantics that must be preserved while lowering `Bitlang preprocessed` into `Bitlang compiled`.
+This document defines Bitlang-specific semantics that must be preserved while lowering `Bitlang preprocessed` into `Bitlang Low`.
 
-C-compatible syntax and ordinary C-compatible constructs are not repeated here. The purpose of this document is to define the places where Bitlang semantics must not be lost merely because Bitlang compiled is C-like.
+C-compatible syntax and ordinary C-compatible constructs are not repeated here. The purpose of this document is to define the places where Bitlang semantics must not be lost merely because Bitlang Low is C-like.
 
 ## 1. Stage contract
 
-Bitlang compiled consumes an already-normalized Bitlang Preprocessed program.
+Bitlang Low consumes an already-normalized Bitlang Preprocessed program.
 
-The compiled stage must not reconstruct source shorthand, infer omitted semantic properties, or re-run source-level preprocessing rules.
+The Bitlang Low stage must not reconstruct source shorthand, infer omitted semantic properties, or re-run source-level preprocessing rules.
 
 If required semantic information is missing or contradictory at the Preprocessed boundary, compilation must diagnose the input rather than silently selecting a C-like default.
 
-Bitlang compiler-generated compiled output may consume analysis-only properties once their constraints have been proven and represented by lower-level structure. Preservation of behavior is required; preservation of every original property spelling is not.
+Bitlang compiler-generated Bitlang Low output may consume analysis-only properties once their constraints have been proven and represented by lower-level structure. Preservation of behavior is required; preservation of every original property spelling is not.
 
 ## 2. Identifiers
 
@@ -22,13 +22,13 @@ Identifier identity remains case-insensitive as inherited from Bitlang Preproces
 
 `_` is a significant identifier character.
 
-Compiler-generated compiled output should use one deterministic canonical spelling for each semantic symbol. A C backend, whose identifiers are case-sensitive, must emit collision-free symbols and must not create distinct backend symbols solely from capitalization differences that are semantically identical in Bitlang.
+Compiler-generated Bitlang Low output should use one deterministic canonical spelling for each semantic symbol. A C backend, whose identifiers are case-sensitive, must emit collision-free symbols and must not create distinct backend symbols solely from capitalization differences that are semantically identical in Bitlang.
 
-Module, class, and other ownership hierarchy may be encoded into generated symbol names when the corresponding high-level container no longer exists in compiled form.
+Module, class, and other ownership hierarchy may be encoded into generated symbol names when the corresponding high-level container no longer exists in Bitlang Low form.
 
 ## 3. Explicit evaluation order
 
-Bitlang compiled must not depend on C's unspecified or implementation-dependent operand evaluation order.
+Bitlang Low must not depend on C's unspecified or implementation-dependent operand evaluation order.
 
 When evaluation order could affect observable behavior, lowering must make the order explicit through statements and compiler-generated temporaries before C emission.
 
@@ -38,9 +38,9 @@ After normalization, a remaining expression may be emitted as an ordinary C expr
 
 ## 4. Semantic-property lowering
 
-Bitlang Preprocessed exposes semantic properties explicitly. Bitlang compiled is allowed to consume those properties during validation and lowering.
+Bitlang Preprocessed exposes semantic properties explicitly. Bitlang Low is allowed to consume those properties during validation and lowering.
 
-A property may disappear from textual compiled output only after its required behavior has been represented by one or more of:
+A property may disappear from textual Bitlang Low output only after its required behavior has been represented by one or more of:
 
 - explicit low-level operations,
 - explicit control flow,
@@ -58,7 +58,7 @@ Properties must never disappear merely because C lacks an equivalent qualifier.
 
 The compiler must reject an operation that violates the resolved capability state before emitting ordinary low-level operations.
 
-After all relevant accesses have been validated, capability metadata that has no remaining runtime effect may be omitted from generated compiled text.
+After all relevant accesses have been validated, capability metadata that has no remaining runtime effect may be omitted from generated Bitlang Low text.
 
 `Unreassignable` does not imply that reachable object state is immutable. `Unwriteable` does not by itself imply that the binding cannot be replaced. Lowering must preserve this distinction.
 
@@ -82,7 +82,7 @@ A `Borrowed` path must not independently destroy the owned resource unless an ex
 
 `Released` resources must not be emitted as ordinary live-resource accesses. Double release and use-after-release that are statically provable are compilation errors.
 
-The variable slot or handle may remain in compiled form after the underlying resource has been released when doing so is required for control flow or diagnostics.
+The variable slot or handle may remain in Bitlang Low form after the underlying resource has been released when doing so is required for control flow or diagnostics.
 
 ## 8. Destruction and finalization safety
 
@@ -110,7 +110,7 @@ A valid copy produces a separate value according to the type's resolved copy sem
 
 A valid move transfers the represented value or resource and invalidates ordinary use of the source according to the resolved move state.
 
-Compiler-generated compiled output must not contain an ordinary read, second move, or release through a source that remains semantically `Moved`.
+Compiler-generated Bitlang Low output must not contain an ordinary read, second move, or release through a source that remains semantically `Moved`.
 
 Move-state metadata may be removed after the compiler has transformed the program into explicit transfers and proven that no invalid source use remains.
 
@@ -160,7 +160,7 @@ Bitlang `Ptr<T>` and `Ref<T>` are semantically distinct even if a C backend even
 
 Lowering may erase the Ptr/Ref distinction only after all `Ref<T>` guarantees have been discharged into validated low-level behavior. A backend must not reintroduce operations that would violate those guarantees.
 
-The final textual spelling used to distinguish Ptr and Ref inside Bitlang compiled remains a separate syntax decision.
+The final textual spelling used to distinguish Ptr and Ref inside Bitlang Low remains a separate syntax decision.
 
 ## 14. Static retention is not C internal linkage
 
@@ -172,7 +172,7 @@ The backend must not infer that the symbol should have C internal linkage solely
 
 ## 15. Class, module, and method lowering
 
-High-level class and module containers do not need to survive as runtime language constructs in Bitlang compiled.
+High-level class and module containers do not need to survive as runtime language constructs in Bitlang Low.
 
 A class may lower into:
 
@@ -189,7 +189,7 @@ Nested `struct` values do not need to be flattened field-by-field merely because
 
 ## 16. Functional constructs
 
-Bitlang compiled is procedural and must not require a backend to reconstruct high-level functional-language semantics.
+Bitlang Low is procedural and must not require a backend to reconstruct high-level functional-language semantics.
 
 First-class functions without captures may lower to ordinary function pointers or another equivalent callable representation.
 
@@ -201,11 +201,11 @@ Pattern matching and other high-level control constructs must be reduced to ordi
 
 Unresolved source-level generics, currying syntax, or other high-level functional sugar must not be left for the C backend to interpret.
 
-## 17. No Bitlang preprocessor at the compiled stage
+## 17. No Bitlang preprocessor at the Bitlang Low stage
 
-Bitlang preprocessor functions have already executed before Bitlang Preprocessed is produced and are not part of Bitlang compiled runtime or compile-time semantics.
+Bitlang preprocessor functions have already executed before Bitlang Preprocessed is produced and are not part of Bitlang Low runtime or compile-time semantics.
 
-A C backend may generate C preprocessor directives as an implementation technique, but those directives are backend output and are not Bitlang compiled preprocessing semantics.
+A C backend may generate C preprocessor directives as an implementation technique, but those directives are backend output and are not Bitlang Low preprocessing semantics.
 
 ## 18. C backend safety rule
 
