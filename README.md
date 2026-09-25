@@ -22,6 +22,16 @@ Bitlang Low
 C / other backend representations
 ```
 
+## Tool naming
+
+The stage tools use role-based names:
+
+- **Bitlang Lowerer**: transforms the fully explicit Bitlang form into Bitlang Low.
+- **Bitlang C Backend**: translates Bitlang Low into C.
+- Other backend translators follow the same `Bitlang <Target> Backend` naming pattern.
+
+`Bitlang Low compiler` and `Bitlang compiled compiler` are not canonical tool names.
+
 ## Design rule
 
 Where a C language construct can be adopted without conflicting with Bitlang Low's safety, determinism, or backend requirements, Bitlang Low follows the C form directly.
