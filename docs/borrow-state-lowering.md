@@ -2,7 +2,7 @@
 
 This document defines how borrow-state semantics arriving from Bitlang Preprocessed are handled when producing **Bitlang Low**.
 
-Source-facing borrow syntax and preprocessing belong to `tomiya7688/Bitlang`. Canonical borrow-state properties belong to `tomiya7688/Bitlang_preprocessed`.
+Source-facing borrow syntax and preprocessing belong to `tomiya7688/Bitlang`. Canonical borrow-state properties belong to `tomiya7688/Bitlang-Explicit`.
 
 ## Input contract
 
