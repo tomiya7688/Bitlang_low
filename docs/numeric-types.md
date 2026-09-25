@@ -1,8 +1,8 @@
-# Bitlang compiled Numeric Types
+# Bitlang Low Numeric Types
 
 Status: Draft / inherited core rule
 
-Bitlang compiled does **not** define a separate numeric type system.
+Bitlang Low does **not** define a separate numeric type system.
 
 Integer and floating-point numeric semantics are inherited from Bitlang's canonical type system. C compatibility applies to syntax and low-level program structure; it does not replace Bitlang numeric types with C primitive types.
 
@@ -31,7 +31,7 @@ The radix and bit width are part of the type itself. They must not be reconstruc
 
 ## Relationship to Bitlang source and preprocessed
 
-Source-level shorthand, defaults, inferred types, and explicitly configured conversion automation are resolved before Bitlang compiled is produced.
+Source-level shorthand, defaults, inferred types, and explicitly configured conversion automation are resolved before Bitlang Low is produced.
 
 For example, Bitlang source may contain:
 
@@ -45,9 +45,9 @@ The canonical Bitlang representation is:
 Int10x32 value
 ```
 
-Bitlang compiled retains the canonical type rather than converting it back into an ambiguous C primitive type.
+Bitlang Low retains the canonical type rather than converting it back into an ambiguous C primitive type.
 
-Consequently compiler-generated Bitlang compiled should use forms such as:
+Consequently compiler-generated Bitlang Low should use forms such as:
 
 ```c
 Int10x32 value;
@@ -83,11 +83,11 @@ Floating-point types follow the same Bitlang canonical representation rule as in
 
 The radix and bit width are therefore explicit type information for floating-point values as well.
 
-If the radix is omitted at Bitlang source level, Bitlang's default radix is resolved before canonical Bitlang compiled output is produced.
+If the radix is omitted at Bitlang source level, Bitlang's default radix is resolved before canonical Bitlang Low output is produced.
 
-Bitlang compiled does not redefine floating-point types according to C's `float`, `double`, or `long double`. Those are possible backend representations only.
+Bitlang Low does not redefine floating-point types according to C's `float`, `double`, or `long double`. Those are possible backend representations only.
 
-Any floating-point behavior already defined by the Bitlang type system is inherited unchanged by Bitlang compiled. Backend-specific implementation details remain the responsibility of lowering.
+Any floating-point behavior already defined by the Bitlang type system is inherited unchanged by Bitlang Low. Backend-specific implementation details remain the responsibility of lowering.
 
 ## Radix is semantic
 
@@ -110,11 +110,11 @@ Values of different radix types are not directly compatible operands merely beca
 
 A representation conversion must already be explicit, normally through Bitlang's pulse semantics, before incompatible radix types are combined.
 
-Bitlang compiled preserves this distinction until lowering has produced an equivalent backend representation.
+Bitlang Low preserves this distinction until lowering has produced an equivalent backend representation.
 
 ## No C numeric promotions
 
-Bitlang compiled does not inherit C's integer promotions, usual arithmetic conversions, or implicit numeric conversions.
+Bitlang Low does not inherit C's integer promotions, usual arithmetic conversions, or implicit numeric conversions.
 
 It must not silently:
 
@@ -125,7 +125,7 @@ It must not silently:
 - convert between integer and floating-point families,
 - convert operands merely to make an expression compile.
 
-Required conversions must already be explicit in the compiled representation.
+Required conversions must already be explicit in the Bitlang Low representation.
 
 ## Cast and pulse
 
@@ -133,13 +133,13 @@ Bitlang's distinction between cast and pulse remains applicable.
 
 A cast changes the semantic type of a value. A pulse changes representation while preserving the source value, including radix-oriented representation changes.
 
-Bitlang compiled must preserve the already-resolved operation rather than replacing it with a C implicit conversion.
+Bitlang Low must preserve the already-resolved operation rather than replacing it with a C implicit conversion.
 
 ## Overflow
 
 Numeric overflow is an error by default, following Bitlang semantics.
 
-Bitlang compiled must not silently adopt C signed-overflow behavior, unsigned wraparound, or backend-specific floating-point behavior merely because C is a backend target.
+Bitlang Low must not silently adopt C signed-overflow behavior, unsigned wraparound, or backend-specific floating-point behavior merely because C is a backend target.
 
 If a distinct operation explicitly requests wrapping or another overflow policy, that operation must remain explicit through lowering.
 
@@ -147,7 +147,7 @@ If a distinct operation explicitly requests wrapping or another overflow policy,
 
 Integer and floating-point types follow the same backend principle.
 
-Bitlang compiled keeps the canonical Bitlang type unchanged. The C backend then chooses a physical C representation that preserves that type's semantics.
+Bitlang Low keeps the canonical Bitlang type unchanged. The C backend then chooses a physical C representation that preserves that type's semantics.
 
 The backend should use a native C representation when the target provides one that is semantically compatible with the Bitlang type. Otherwise it must use a wider carrier, generated helper type, software representation, runtime/helper operation, or another defined lowering strategy.
 
@@ -172,6 +172,6 @@ The backend mapping is not allowed to redefine a Bitlang type according to whate
 
 ## Core rule
 
-Bitlang compiled is C-like in syntax and low-level structure, but **numeric types and numeric semantics remain Bitlang-native**.
+Bitlang Low is C-like in syntax and low-level structure, but **numeric types and numeric semantics remain Bitlang-native**.
 
 This applies uniformly to integer and floating-point numeric types and is a foundational language rule rather than an optional backend convention.
