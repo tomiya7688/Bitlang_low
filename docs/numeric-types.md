@@ -143,6 +143,34 @@ Bitlang Low must not silently adopt C signed-overflow behavior, unsigned wraparo
 
 If a distinct operation explicitly requests wrapping or another overflow policy, that operation must remain explicit through lowering.
 
+## Shift families
+
+Bitlang Low preserves two distinct shift families.
+
+```text
+bit_shift_left
+bit_shift_right_zero
+bit_shift_right_sign
+
+radix_shift_left
+radix_shift_right
+```
+
+Bit shifts operate on the fixed semantic bit representation. Radix shifts scale by powers of the type's own radix.
+
+For radix `R`:
+
+```text
+radix_shift_left(v, n)  = v * R^n
+radix_shift_right(v, n) = v / R^n
+```
+
+Bit shifts keep the same width and may discard bits that leave that width by definition. Radix-left shift is checked numeric scaling and must report overflow rather than discard significant bits.
+
+Ordinary bit-shift counts must satisfy `0 <= count < bit_width`. Static violations are compile errors; dynamic violations use the normal runtime trap path.
+
+A backend must preserve zero-fill versus sign-fill right-shift semantics explicitly and must not depend on implementation-specific signed-shift behavior.
+
 ## Unified C backend lowering rule
 
 Integer and floating-point types follow the same backend principle.
