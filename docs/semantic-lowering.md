@@ -199,7 +199,7 @@ Calls through closures must make the required environment explicit before backen
 
 Pattern matching and other high-level control constructs must be reduced to ordinary control flow. Sum/variant-like values must have an explicit low-level representation before backend translation.
 
-Unresolved source-level generics, currying syntax, or other high-level functional sugar must not be left for the C backend to interpret.
+Generics are already fully resolved before this stage. Bitlang Low must not contain unresolved generic parameters, runtime generic substitution, or generic constraint checks. Only the concrete declarations/types produced by preprocessing may remain. Currying syntax and other high-level functional sugar likewise must not be left for the C backend to interpret.
 
 ## 17. No Bitlang preprocessor at the Bitlang Low stage
 
