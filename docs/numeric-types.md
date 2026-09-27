@@ -165,7 +165,7 @@ radix_shift_left(v, n)  = v * R^n
 radix_shift_right(v, n) = v / R^n
 ```
 
-Bit shifts keep the same width and may discard bits that leave that width by definition. Radix-left shift is checked numeric scaling and must report overflow rather than discard significant bits.
+Bit shifts keep the same width. Loss behavior is selected explicitly by the operation. Radix-shift overflow behavior is also selected explicitly by the operation.
 
 Ordinary bit-shift counts must satisfy `0 <= count < bit_width`. Static violations are compile errors; dynamic violations use the normal runtime trap path.
 
