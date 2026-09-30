@@ -98,6 +98,16 @@ A `Borrowed` path must not independently destroy the owned resource unless an ex
 
 The variable slot or handle may remain in Bitlang Low form after the underlying resource has been released when doing so is required for control flow or diagnostics.
 
+### Residual collector boundary
+
+The optional Bitlang residual garbage collector is not part of Bitlang Low's core ownership model.
+
+If the selected program/backend actually uses that collector, its tracking/allocation/final cleanup support must appear as explicit reachable runtime/library operations or metadata required by those operations.
+
+The Lowerer must not remove an otherwise required deterministic release merely because a residual collector is enabled.
+
+VM-oriented lowering must remain correct without depending on the residual collector unless the program explicitly selects a VM/runtime collector contract.
+
 ## 8. Destruction and finalization safety
 
 The compiler must treat destruction safety as a mandatory validation gate.
@@ -174,15 +184,100 @@ Bitlang `Ptr<T>` and `Ref<T>` are semantically distinct even if a C backend even
 
 Lowering may erase the Ptr/Ref distinction only after all `Ref<T>` guarantees have been discharged into validated low-level behavior. A backend must not reintroduce operations that would violate those guarantees.
 
-The final textual spelling used to distinguish Ptr and Ref inside Bitlang Low remains a separate syntax decision.
+Canonical Low preserves `Ptr<T>` and `Ref<T>` as distinct spellings. A human-facing C-style `T*` alias may normalize to `Ptr<T>`, but it must never erase or imply `Ref<T>`.
 
-## 14. Static retention is not C internal linkage
+## 14. Retention domains, initialization, finalization, and linkage
+
+### 14.1 Static retention is not C internal linkage
 
 Bitlang's static-retention semantics and C's file-scope internal-linkage use of `static` are not the same concept.
 
 When a Bitlang Low construct represents Bitlang static retention, the backend must preserve the required storage lifetime.
 
 The backend must not infer that the symbol should have C internal linkage solely because the Bitlang value has static retention. Linkage/export visibility is a separate concern and must be lowered separately.
+
+### 14.2 Retention domain
+
+Where the Bitlang retention-domain axis is applicable, Low lowering must preserve the resolved domain:
+
+```text
+Process_retention
+Thread_retention
+Task_retention
+```
+
+The domain remains backend-relevant until concrete storage has been selected.
+
+- `Process_retention`: one retained state for the process/program.
+- `Thread_retention`: one independent retained state per thread.
+- `Task_retention`: one independent retained state per task/coroutine-like execution unit.
+
+A backend must not silently collapse thread/task retention into process-global storage.
+
+For C output, process retention may use ordinary static-duration storage where semantics match. Thread retention may use C thread-local storage when the selected C target provides matching semantics, otherwise a runtime helper/context is required. Standard C has no general task-local storage model, so task retention requires an explicit runtime/task-context representation.
+
+For the Bitlang VM target, retention storage is defined by the VM runtime/target contract and must not reuse Go host globals/thread behavior implicitly.
+
+### 14.3 Deterministic retained-state initialization
+
+Bitlang's retained-state initialization dependency graph is inherited unchanged.
+
+The Lowerer must preserve:
+
+- explicit initialization-order constraints;
+- statically known initializer dependencies;
+- owner/module initialization dependencies.
+
+Dependencies initialize before dependents.
+
+When otherwise unordered, deterministic tie-breaking is:
+
+1. lexical declaration order inside the same declaration field;
+2. canonical fully qualified declaration-name order across unrelated fields/modules.
+
+Provable initialization cycles are compile errors.
+
+The C backend must not rely on unspecified or incidental translation-unit/linker initialization order to implement observable Bitlang ordering. Nontrivial ordering must be materialized as explicit generated initialization control flow.
+
+Pure constant data may use native C static initialization only when doing so cannot change observable ordering or side effects.
+
+### 14.4 Lazy initialization
+
+`First_reach_initialization` and `First_use_initialization` remain lazy.
+
+Their dependencies are initialized first when the trigger fires.
+
+Generated lowering must represent enough state to distinguish at least:
+
+```text
+not_initialized
+initializing
+initialized
+```
+
+Runtime re-entry into a state that is already `initializing` is an explicit runtime failure/trap rather than access to a partially initialized value.
+
+`Manual_initialization` does not generate automatic initialization.
+
+### 14.5 Finalization order
+
+Automatic finalization defaults to the reverse of the **actual successful initialization order** for each retention-domain instance.
+
+Only states whose initialization completed successfully participate in automatic finalization.
+
+Explicit finalization-order constraints may refine this order but must not violate dependency/lifetime/destruction safety.
+
+Each thread/task retention instance keeps its own actual initialization history and reverse finalization order. Process retention uses the process-wide history.
+
+The finalization trigger decides when an item becomes eligible; this ordering rule decides the relative order among eligible items.
+
+### 14.6 Backend representation
+
+Initialization/finalization order is observable Low behavior once inherited from Bitlang and therefore must be represented explicitly enough for every backend to preserve it.
+
+The Bitlang VM Backend lowers these rules into explicit Core control flow/runtime calls.
+
+The C backend may use generated init/fini functions, guard objects/state variables, thread-local helpers, task-context helpers, or equivalent mechanisms. It must not depend on C behavior that does not provide the required deterministic order.
 
 ## 15. Class, module, and method lowering
 
