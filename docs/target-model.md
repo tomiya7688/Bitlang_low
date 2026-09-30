@@ -38,12 +38,58 @@ A backend whose native C implementation or machine ABI does not use an 8-bit byt
 
 The required Bitlang VM architecture families (x64, ARM64, and RISC-V) use an 8-bit addressable byte and therefore map directly.
 
-## 3. Required target descriptor information
+## 3. Target-sized Low scalar types
+
+Bitlang Low defines target-sized physical-count types that are intentionally separate from Bitlang's canonical arbitrary-width numeric families.
+
+### Size
+
+`Size` is an unsigned target-sized integer used for physical sizes and non-negative physical counts.
+
+Its exact width/range is supplied by the selected target descriptor.
+
+Typical uses include:
+
+- `sizeof` results;
+- `alignof` results;
+- field byte offsets;
+- dynamic storage allocation sizes;
+- physical array element counts/strides where a target-sized count is required.
+
+`Size` is not an alias for `Uint10x32`, `Uint10x64`, or any other canonical Bitlang integer type. Conversion between `Size` and a canonical numeric type is explicit and checked when the target range may not fit.
+
+For the C backend, `Size` normally maps to the selected target's `size_t` when that type preserves the required contract.
+
+### Offset
+
+`Offset` is a signed target-sized integer used for pointer differences and signed physical offsets.
+
+Its exact width/range is supplied by the selected target descriptor.
+
+Pointer subtraction returns `Offset`. Ordinary pointer arithmetic uses an explicit `Offset` (or a value explicitly converted to it).
+
+`Offset` is distinct from both `Size` and ordinary canonical Bitlang integers.
+
+For the C backend, `Offset` normally maps to the selected target's `ptrdiff_t` when suitable.
+
+### Address remains distinct
+
+`Address`, `Size`, and `Offset` are three different Low types even when the selected target represents all of them with the same machine width.
+
+- `Address` represents a raw target address value.
+- `Size` represents a non-negative size/count.
+- `Offset` represents a signed difference/offset.
+
+No implicit conversion exists among them.
+
+## 4. Required target descriptor information
 
 A target descriptor must provide enough information to determine at least:
 
 - target/profile identity;
 - data-address width and representation;
+- `Size` width/range;
+- `Offset` width/range;
 - function/code-address representation where it differs;
 - semantic null lowering for pointer-shaped values;
 - byte order;
@@ -60,15 +106,15 @@ A target descriptor must provide enough information to determine at least:
 
 Backend-specific extensions may add more information, but Low semantics must not be reconstructed from undocumented backend defaults.
 
-## 4. Physical queries
+## 5. Physical queries
 
-`sizeof`, `alignof`, field-offset queries, `Address` width, ordinary struct layout, and array stride are resolved using the selected target descriptor.
+`sizeof`, `alignof`, field-offset queries, `Address` width, `Size`/`Offset` width, ordinary struct layout, and array stride are resolved using the selected target descriptor.
 
 Therefore the same portable Low source may produce different physical sizes and offsets for different targets while preserving the same language-level semantics.
 
 Code requiring a stable cross-target binary layout must use the explicit-layout facility rather than ordinary target-native layout.
 
-## 5. C backend target descriptor
+## 6. C backend target descriptor
 
 The Bitlang C Backend uses the **selected target C ABI**, not the host ABI of the process running the translator.
 
@@ -78,7 +124,7 @@ When C cannot express a required Low behavior directly, the backend must use exp
 
 For C23-capable targets, features such as two's-complement signed integers and fixed-underlying-type enumerations may permit more direct lowering, but Low does not require the generated C dialect itself to be C23 when an equivalent defined lowering is available.
 
-## 6. Bitlang VM target descriptor
+## 7. Bitlang VM target descriptor
 
 The Bitlang VM is a target in its own right.
 
@@ -91,7 +137,7 @@ Its target descriptor is defined by the Bitlang VM ABI/layout contract and must 
 
 The Bitlang VM Backend and VM runtime must consume compatible descriptor/ABI fixtures so that `sizeof`, alignment, pointer representation, call/return behavior, and guest memory layout agree exactly.
 
-## 7. Build reproducibility
+## 8. Build reproducibility
 
 The selected target descriptor/profile is part of build identity.
 
