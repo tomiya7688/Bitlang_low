@@ -811,12 +811,10 @@ This policy does not automatically adopt C implementation-defined behavior eithe
 
 The remaining decisions that cannot simply inherit C behavior are tracked in [`open-decisions.md`](open-decisions.md). The major unresolved areas are:
 
-- deterministic enum underlying representation,
 - external C/native ABI and symbol contract,
 - Bitlang string/character low-level representation,
-- static/module initialization and destruction order,
 - concurrency/atomic memory model,
-- exact canonical Ptr/Ref textual representation,
-- exact-layout / bit-field facility for protocols, hardware, and ABI-specific layouts.
+- exact-layout / bit-field facility for protocols, hardware, and ABI-specific layouts,
+- runtime helper / allocator ABI.
 
 Until one of these areas is explicitly defined, similarity to C syntax does not imply that C implementation-defined behavior becomes Bitlang semantics. C undefined behavior is already rejected by the general policy above unless an explicit Bitlang unsafe/backend-specific exception is defined.
