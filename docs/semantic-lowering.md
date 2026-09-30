@@ -6,6 +6,20 @@ This document defines Bitlang-specific semantics that must be preserved while lo
 
 C-compatible syntax and ordinary C-compatible constructs are not repeated here. The purpose of this document is to define the places where Bitlang semantics must not be lost merely because Bitlang Low is C-like.
 
+## Backend translators are semantic compilers
+
+A Bitlang Low backend translator is a semantic compiler, not merely a syntax renderer.
+
+By the time Bitlang Low is produced, high-level source constructs have been reduced, but important low-level safety and defined-behavior requirements still remain.
+
+A C translator must emit C whose observable behavior matches Bitlang Low even where direct C syntax would introduce undefined, implementation-defined, or otherwise incompatible behavior.
+
+An assembly translator must likewise preserve the same contract while additionally selecting instructions, registers, calling conventions, stack/storage layout, checks, cleanup paths, and target-specific helpers.
+
+The translator may consume proof/analysis metadata after it has converted those guarantees into concrete low-level behavior, but it must not discard a guarantee merely because the destination language or ISA does not express it directly.
+
+This means backend implementations may be substantially more sophisticated than the apparent simplicity of the Bitlang Low language itself.
+
 ## 1. Stage contract
 
 Bitlang Low consumes an already-normalized Bitlang Preprocessed program.
