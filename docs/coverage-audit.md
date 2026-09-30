@@ -10,6 +10,7 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | --- | --- | --- |
 | Canonical arbitrary-width integers | Bitlang / VM | Covered; fixed-width signed representation and div/mod rules are specified in `numeric-types.md`. |
 | Floating-point semantic format/rounding | Bitlang | **Blocked upstream**: Bitlang defines radix + bit width but not the complete float format, rounding, NaN/Inf semantics. |
+| Boolean/condition semantics | Bitlang / C / VM | Covered: canonical `Bool`, no implicit scalar truthiness, conditions require `Bool`. |
 | Checked/discard shift families | Bitlang | Covered; canonical operations preserve checked vs discard. C operators are only surface aliases. |
 | Overflow / runtime failure | Bitlang / VM | Covered; static error or runtime trap, with explicit checked operations for recovery. |
 | Array bounds | Bitlang / VM | Covered. |
