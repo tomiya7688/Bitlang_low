@@ -1,6 +1,6 @@
 # Bitlang Low
 
-Bitlang Low is the low-level, C-like language used after `Bitlang Explicit` in the Bitlang toolchain.
+Bitlang Low is a low-level, C-like **programming language** used after `Bitlang Explicit` in the Bitlang toolchain. It is also a valid language for direct human-authored programs; it is not merely an internal compiler IR.
 
 Its primary goals are:
 
@@ -9,6 +9,32 @@ Its primary goals are:
 - remain suitable for optimization and static analysis,
 - remove high-level ambiguity before backend translation,
 - keep the language itself simple enough to be hand-written when useful, without requiring compiler-generated code to be human-friendly.
+
+## Human-authored Bitlang Low
+
+Bitlang Low is intentionally writable by programmers.
+
+The normal Bitlang pipeline may generate Bitlang Low automatically, but generated origin is not a validity requirement. A programmer may write a Bitlang Low translation unit directly and compile/translate it through the Bitlang Low validator/backend pipeline.
+
+Conceptually:
+
+```text
+Bitlang source
+    -> Bitlang Explicit
+    -> Bitlang Lowerer
+    -> Bitlang Low
+    -> backend
+
+or
+
+human-authored Bitlang Low
+    -> Bitlang Low validation
+    -> backend
+```
+
+Directly written Bitlang Low must satisfy the same Bitlang Low language rules as compiler-generated Bitlang Low. It does not need a fictitious upstream Bitlang/Explicit source artifact merely to be considered valid.
+
+This is important to the Bitlang family principle that programmers may choose the abstraction level and writing style appropriate to their task.
 
 ## Position in the toolchain
 
