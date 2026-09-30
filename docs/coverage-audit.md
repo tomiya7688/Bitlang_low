@@ -13,6 +13,7 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | Boolean/condition semantics | Bitlang / C / VM | Covered: canonical `Bool`, no implicit scalar truthiness, conditions require `Bool`. |
 | Checked/discard shift families | Bitlang | Covered; canonical operations preserve checked vs discard. C operators are only surface aliases. |
 | Overflow / runtime failure | Bitlang / VM | Covered; static error or runtime trap, with explicit checked operations for recovery. |
+| Array shape / runtime length | Bitlang / C / VM | Covered: fixed arrays are inline; non-fixed `Array<T>` is explicit pointer + `Size` length, non-resizable core descriptor. |
 | Array bounds | Bitlang / VM | Covered. |
 | Ordinary struct layout | C / VM | Covered as target-native layout. |
 | Target data model | C / VM | Covered by `target-model.md`. |
