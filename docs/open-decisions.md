@@ -45,23 +45,3 @@ If added, it needs rules for:
 - backend support/fallback.
 
 This should remain separate from the ordinary `Int<Radix>x<BitWidth>` / `Uint<Radix>x<BitWidth>` type system.
-
-
-## 4. Runtime helper / allocator ABI
-
-Bitlang Low requires explicit runtime/helper operations for behavior that is not represented as ordinary C syntax or a direct machine operation.
-
-Allocation and release are never implicit Low behavior. The remaining contract must define the canonical helper/intrinsic ABI used for operations such as:
-
-- heap allocation with explicit size/alignment;
-- deallocation/release;
-- optional reallocation;
-- out-of-memory behavior and checked allocation;
-- runtime trap support;
-- arbitrary-width numeric helpers;
-- task-local storage support;
-- optional residual-collector integration.
-
-The general failure model is already fixed: ordinary failing operations trap, while recoverable behavior uses an explicit checked/non-trapping operation.
-
-The exact helper names, signatures, ownership of returned memory, zero-size allocation behavior, and C/VM helper mapping still need to be specified.
