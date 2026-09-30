@@ -22,9 +22,9 @@ This means backend implementations may be substantially more sophisticated than 
 
 ## 1. Stage contract
 
-Bitlang Low consumes an already-normalized Bitlang Preprocessed program.
+The normal Bitlang lowering path produces Bitlang Low from an already-normalized Bitlang Explicit program. Separately, valid human-authored Bitlang Low may enter directly at the Bitlang Low parse/validation boundary.
 
-The Bitlang Low stage must not reconstruct source shorthand, infer omitted semantic properties, or re-run source-level preprocessing rules.
+Neither generated nor human-authored Bitlang Low asks the backend to reconstruct Bitlang source shorthand or re-run source-level preprocessing rules. Human-authored Low must state or satisfy every semantic requirement that the Bitlang Low specification requires directly.
 
 If required semantic information is missing or contradictory at the Preprocessed boundary, compilation must diagnose the input rather than silently selecting a C-like default.
 
