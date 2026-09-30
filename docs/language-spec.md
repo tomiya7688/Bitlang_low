@@ -12,6 +12,38 @@ A foundational exception is the numeric type system: Bitlang Low inherits Bitlan
 
 Bitlang-specific ownership, lifetime, property, reference, class/module, and functional lowering rules are defined in [`semantic-lowering.md`](semantic-lowering.md). Remaining non-C decisions are tracked in [`open-decisions.md`](open-decisions.md).
 
+## Backend complexity is intentional
+
+Bitlang Low intentionally keeps its language surface and semantic model comparatively small and explicit.
+
+This does **not** imply that a Bitlang Low compiler, C translator, or assembly translator should be a simple textual converter.
+
+The backend is responsible for preserving Bitlang Low's already-defined behavior while mapping it onto a less safe or more target-specific representation.
+
+Depending on the target, this may require substantial compiler work, including:
+
+- preserving explicit lifetime and release behavior;
+- preventing reintroduction of dangling access or invalid destruction;
+- preserving deterministic evaluation order;
+- inserting required runtime checks and trap paths;
+- representing arbitrary semantic bit widths;
+- implementing checked overflow and exact shift behavior;
+- lowering `Ref<T>` without losing its validated guarantees;
+- choosing target-specific storage and ABI layouts;
+- avoiding C undefined or unintended implementation-defined behavior;
+- materializing helper routines when a target instruction or C primitive cannot directly express the required semantics;
+- register allocation, calling convention handling, stack/layout decisions, and instruction selection for assembly output.
+
+Therefore the design intentionally allows:
+
+```text
+simple Bitlang Low language
+    -> sophisticated translator/compiler
+    -> simple, efficient, defined backend program
+```
+
+Complexity should be concentrated in compile-time tooling rather than pushed into runtime semantics.
+
 ## 1. Translation unit
 
 A Bitlang Low source file is a translation unit containing declarations and definitions in a C-like form.
