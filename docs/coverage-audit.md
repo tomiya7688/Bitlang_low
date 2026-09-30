@@ -34,7 +34,7 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | Strings / characters | Bitlang / C / VM | Covered: Unicode scalar semantics, UTF-8 materialization, pointer + `Size` byte length, no implicit NUL termination. |
 | External/native ABI | C | Open. |
 | Runtime helper / allocator ABI | C / VM | Open at the ABI/signature level; allocation/release must be explicit, never implicit. |
-| Concurrency / atomics memory model | Bitlang / C / VM | Open. Retention domains alone do not define shared-memory concurrency. |
+| Concurrency / atomics memory model | Bitlang / C / VM | **Blocked upstream**: current Low core defines no shared-memory concurrency/atomic/volatile semantics; retention domains are storage domains only. |
 | Exact packed / bit-field layout | C / hardware / VM | Open. |
 | Untyped C varargs / foreign varargs | C ABI | Not part of ordinary Low core; handle only through the explicit external ABI/FFI contract. |
 
