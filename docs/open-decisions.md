@@ -1,25 +1,9 @@
 # Bitlang Low Open Semantic Decisions
 
-Status: Draft
+Status: Current Low-specific decision set resolved
 
-This document lists only decisions that cannot be inherited mechanically from ordinary C behavior and are not already fixed by Bitlang / Bitlang Preprocessed semantics.
+There are currently no unresolved **Bitlang Low-owned** semantic decisions in this file.
 
-C-compatible syntax and behavior do not need a separate Bitlang Low decision unless they conflict with Bitlang semantics.
+Known upstream blockers and future language areas are tracked in [`coverage-audit.md`](coverage-audit.md), including floating-point semantics and a future Bitlang concurrency/atomics model.
 
-## 1. Explicit layout / bit-field facility
-
-Ordinary arbitrary-bit-width numeric values should not be represented as C bit-fields merely because their semantic width is unusual.
-
-A separate exact-layout facility may still be useful for hardware registers, protocols, packed structs, and ABI-specific structures.
-
-If added, it needs rules for:
-
-- bit order,
-- byte order,
-- field offsets,
-- cross-byte fields,
-- signed interpretation,
-- alignment and packing,
-- backend support/fallback.
-
-This should remain separate from the ordinary `Int<Radix>x<BitWidth>` / `Uint<Radix>x<BitWidth>` type system.
+New decisions that cannot inherit Bitlang semantics or compatible C behavior should be added here before implementation.
