@@ -684,7 +684,7 @@ Representation-changing pulse operations remain semantically distinct from casts
 
 Bitlang Low separates semantic bit width from backend storage size.
 
-`sizeof(type-or-value)` reports the physical storage size in bytes for the selected backend representation. It is therefore suitable for C-compatible layout, allocation, pointer stepping, ABI work, and other operations that depend on actual storage.
+`sizeof(type-or-value)` reports the physical storage size in Bitlang bytes for the selected backend representation and has type `Size`. It is therefore suitable for C-compatible layout, allocation, ABI work, and other operations that depend on actual storage.
 
 `bitsizeof(type-or-value)` reports the semantic Bitlang bit width when the type has a defined semantic bit width.
 
@@ -699,7 +699,7 @@ The two sizes are intentionally allowed to differ.
 
 The programmer or generated Bitlang Low code may use whichever measurement is appropriate to the operation. Backend lowering must not substitute one for the other.
 
-Alignment is a storage/layout property rather than a semantic numeric-width property. Any `alignof`-equivalent operation therefore reports the alignment of the selected backend representation.
+Alignment is a storage/layout property rather than a semantic numeric-width property. Any `alignof`-equivalent operation therefore reports the alignment of the selected backend representation and has type `Size`. Field-offset queries likewise return `Size`.
 
 For types that do not define a meaningful semantic bit width, `bitsizeof` is invalid unless that type's own Bitlang specification defines what semantic bit size means.
 
