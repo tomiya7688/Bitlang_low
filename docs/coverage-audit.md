@@ -16,8 +16,8 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | Array shape / runtime length | Bitlang / C / VM | Covered: fixed arrays are inline; non-fixed `Array<T>` is explicit pointer + `Size` length, non-resizable core descriptor. |
 | Array bounds | Bitlang / VM | Covered. |
 | Ordinary struct layout | C / VM | Covered as target-native layout. |
-| Target data model | C / VM | Covered by `target-model.md`. |
-| Ptr / Ref / Address | Bitlang / C / VM | Covered semantically; canonical spelling is retained in generated Low. |
+| Target data model | C / VM | Covered by `target-model.md`, including `Size` / `Offset` / `Address`. |
+| Ptr / Ref / Address | Bitlang / C / VM | Covered semantically; canonical spelling is retained and unsafe relaxation uses explicit `unsafe {}`. |
 | Ownership / release / destruction safety | Bitlang | Covered. |
 | Retention domains | Bitlang | Covered by semantic lowering rules for process/thread/task retention. |
 | Static/lazy initialization order | Bitlang | Covered by deterministic dependency-graph lowering. |
@@ -32,11 +32,11 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | Sum/variant/pattern matching | Bitlang | High-level form eliminated; exact optional payload representation remains an implementation/layout choice. |
 | Enum physical representation | C / VM | Covered with explicit canonical underlying Bitlang integer type. |
 | Strings / characters | Bitlang / C / VM | Covered: Unicode scalar semantics, UTF-8 materialization, pointer + `Size` byte length, no implicit NUL termination. |
-| External/native ABI | C | Open. |
-| Runtime helper / allocator ABI | C / VM | Open at the ABI/signature level; allocation/release must be explicit, never implicit. |
+| External/native ABI | C | Covered by explicit `extern(c, "...")` / `export(c, "...")` boundary and ABI wrappers. |
+| Runtime helper / allocator ABI | C / VM | Covered by `runtime-helper-abi.md`; alloc/try-alloc/free/trap are explicit semantic helpers. |
 | Concurrency / atomics memory model | Bitlang / C / VM | **Blocked upstream**: current Low core defines no shared-memory concurrency/atomic/volatile semantics; retention domains are storage domains only. |
-| Exact packed / bit-field layout | C / hardware / VM | Open. |
-| Untyped C varargs / foreign varargs | C ABI | Not part of ordinary Low core; handle only through the explicit external ABI/FFI contract. |
+| Exact packed / bit-field layout | C / hardware / VM | Covered by deterministic `exact struct` layout; C bit-fields are never the semantic source of truth. |
+| Untyped C varargs / foreign varargs | C ABI | Covered only inside explicit C ABI imports; arguments require explicit ABI-type conversion. |
 
 ## Review rule
 
