@@ -8,7 +8,25 @@ Its primary goals are:
 - preserve a structure that can be translated to C mechanically,
 - remain suitable for optimization and static analysis,
 - remove high-level ambiguity before backend translation,
-- keep the language itself simple enough to be hand-written when useful, without requiring compiler-generated code to be human-friendly.
+- keep the language itself directly writable and readable enough for inspection, auditing, and debugging; compiler-generated output may prioritize determinism over elegance, but must remain meaningfully inspectable.
+
+## Canonical boundary before C
+
+For the C backend path, Bitlang Low is the final canonical Bitlang language representation before translation into C.
+
+```text
+Bitlang
+    -> Bitlang Explicit
+    -> Bitlang Low   <- final canonical/auditable Bitlang form for C output
+    -> C
+    -> native toolchain
+```
+
+Because of this role, Bitlang Low must remain understandable to a programmer who needs to inspect what the Bitlang toolchain actually decided before C translation.
+
+Compiler-generated Low may use deterministic generated names and expanded low-level control flow, but it must not become an opaque private encoding whose meaning can only be understood by the compiler implementation.
+
+For assembly-oriented paths, another lower stage may follow Bitlang Low, such as Bitlang VM Assembly. Assembly is inherently less convenient to inspect, so Bitlang Low remains the practical human-readable audit point even when it is not the absolute last intermediate representation.
 
 ## Human-authored Bitlang Low
 
