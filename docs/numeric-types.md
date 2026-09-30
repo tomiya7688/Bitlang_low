@@ -73,6 +73,21 @@ The declaration grammar remains C-like; the numeric type system remains Bitlang'
 
 Signedness is explicit in the canonical type and is not inferred from target ABI defaults.
 
+### Canonical signed representation
+
+Fixed-width signed `Int<Radix>x<BitWidth>` values use a **two's-complement semantic bit representation**.
+
+For semantic width `W`:
+
+```text
+minimum = -2^(W-1)
+maximum =  2^(W-1) - 1
+```
+
+Bitwise operations and sign-preserving right shifts operate on this canonical `W`-bit two's-complement representation.
+
+This rule is semantic and does not depend on the representation chosen by the backend carrier. A backend targeting a C dialect/implementation whose signed type cannot directly preserve the required width/representation must use an unsigned carrier, wider carrier, helper representation, or another defined lowering.
+
 ## Floating-point types
 
 Floating-point types follow the same Bitlang canonical representation rule as integers when radix and bit width are meaningful:
@@ -143,6 +158,27 @@ Bitlang Low must not silently adopt C signed-overflow behavior, unsigned wraparo
 
 If a distinct operation explicitly requests wrapping or another overflow policy, that operation must remain explicit through lowering.
 
+## Integer division and remainder
+
+Integer division is deterministic and truncates toward zero.
+
+For integer operands `a` and `b` with a valid nonzero divisor:
+
+```text
+q = a / b
+r = a % b
+
+a == q * b + r
+```
+
+The remainder is zero or has the same sign as the dividend `a`.
+
+Division or remainder by zero is an error. If provable statically, compilation fails. If the divisor is only known at runtime, lowering must guard the operation and use the normal runtime trap path on zero.
+
+For signed integers, the case where the mathematically correct quotient is outside the semantic type range (for example the minimum two's-complement value divided by `-1`) is ordinary checked overflow and follows the same compile-error/runtime-trap rule as other overflow.
+
+A C backend must guard these cases before emitting a C division/remainder operation whose execution would otherwise be undefined.
+
 ## Shift families
 
 Bitlang Low preserves two distinct shift families.
@@ -165,7 +201,26 @@ radix_shift_left(v, n)  = v * R^n
 radix_shift_right(v, n) = v / R^n
 ```
 
-Bit shifts keep the same width. Loss behavior is selected explicitly by the operation. Radix-shift overflow behavior is also selected explicitly by the operation.
+Bit shifts keep the same width. Loss behavior is selected explicitly by the operation.
+
+Canonical bit-shift operations distinguish checked and discard forms:
+
+```text
+bit_shift_left_checked
+bit_shift_left_discard
+bit_shift_right_zero_checked
+bit_shift_right_zero_discard
+bit_shift_right_sign_checked
+bit_shift_right_sign_discard
+```
+
+A checked form rejects semantic information loss according to the canonical Bitlang shift rule. A discard form explicitly permits bits leaving the semantic width to be discarded.
+
+Human-authored C-like `<<` and `>>` syntax in Bitlang Low is the discard form. Compiler-generated canonical Low must preserve an upstream checked operation as the corresponding explicit checked intrinsic rather than silently rewriting it to the C-like discard operator.
+
+For `>>`, unsigned values use zero-fill and signed values use sign-fill unless the explicit intrinsic names a different valid form.
+
+Radix-shift overflow behavior is selected explicitly by the operation.
 
 Ordinary bit-shift counts must satisfy `0 <= count < bit_width`. Static violations are compile errors; dynamic violations use the normal runtime trap path.
 
