@@ -528,11 +528,49 @@ The Bitlang VM Backend lowers enum values directly through the explicit underlyi
 
 ## 16. Arrays
 
-C-like fixed-size array syntax is used.
+Bitlang Low has both fixed-length and runtime-length contiguous arrays.
+
+### 16.1 Fixed-length arrays
+
+C-like fixed-size syntax is used:
 
 ```c
 Int10x32 values[16];
+Int10x32 matrix[4][4];
 ```
+
+A fixed length is part of the physical storage contract and may use inline storage.
+
+### 16.2 Runtime-length arrays
+
+The canonical runtime-length type is:
+
+```text
+Array<T>
+```
+
+It represents a contiguous region with an explicit element count.
+
+Its semantic low-level descriptor contains:
+
+```text
+data   : Ptr<T>
+length : Size
+```
+
+The descriptor does not imply ownership, allocation, capacity, or resize behavior. Those concerns are represented separately by Bitlang properties or library/container abstractions.
+
+`array_length(value)` returns `Size`.
+
+An explicit storage-view operation may expose the backing `Ptr<T>`/reference view according to the validated ownership and borrowing rules.
+
+C array-to-pointer decay is not part of Low semantics. Conversion from fixed array to runtime-length view or pointer is explicit.
+
+The C backend normally lowers a runtime-length array to an equivalent pointer-plus-`Size` representation. It must not lower it to a bare pointer or C VLA if doing so loses observable length/ownership semantics.
+
+The Bitlang VM Backend lowers the descriptor using guest pointer representation plus the VM target's `Size` representation.
+
+### 16.3 Indexing and bounds
 
 Indexing uses square brackets:
 
@@ -540,17 +578,13 @@ Indexing uses square brackets:
 values[index]
 ```
 
-Multi-dimensional C-like syntax may be represented directly:
-
-```c
-Int10x32 matrix[4][4];
-```
-
 Array bounds are part of Bitlang semantics and out-of-range access is always an error.
+
+For a runtime-length array, validity requires `0 <= index < length`. The index is explicitly converted/validated against the target `Size` domain when needed; C implicit integer conversions are not used.
 
 If an out-of-range index can be proven statically, compilation must fail.
 
-If the index is only known at runtime, lowering must preserve a bounds check before the access. A failed runtime bounds check enters Bitlang's runtime error path; the exact common runtime error/trap mechanism is specified separately.
+If the index is only known at runtime, lowering must preserve a bounds check before the access. A failed runtime bounds check enters Bitlang's runtime trap path.
 
 The C backend must not emit unchecked indexing for an access whose validity has not already been proven.
 
