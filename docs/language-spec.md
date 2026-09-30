@@ -36,6 +36,25 @@ Bitlang Low may remain intentionally lower-level, stricter, and less convenient 
 
 This preserves the Bitlang family design goal that programmers can choose a writing style and abstraction level rather than being forced to use only the highest-level frontend.
 
+## Canonical audit boundary for the C path
+
+When Bitlang is compiled through the C backend, Bitlang Low is the final canonical Bitlang representation before backend-language translation.
+
+This makes Bitlang Low an explicit audit/debug boundary, not merely a transport format.
+
+A programmer should be able to inspect generated Bitlang Low to determine, before C emission:
+
+- which concrete types and storage representations Bitlang selected;
+- which calls and control-flow paths remain;
+- where explicit cleanup/release occurs;
+- which runtime checks remain;
+- which declarations and standard-library support survived reachability analysis;
+- which low-level operations the backend is required to preserve.
+
+Generated Low may be verbose and compiler-oriented, but it must not depend on hidden meaning that exists only inside compiler memory.
+
+For an assembly-oriented pipeline, a lower assembly representation may follow Bitlang Low. That does not remove Bitlang Low's role as the principal human-readable low-level audit representation; assembly readability is not required to match source-language readability.
+
 ## Backend complexity is intentional
 
 Bitlang Low intentionally keeps its language surface and semantic model comparatively small and explicit.
@@ -111,7 +130,7 @@ Therefore capitalization alone must not create a distinct Bitlang Low symbol. Co
 
 String and character contents remain case-sensitive and are not subject to identifier normalization.
 
-Compiler-generated identifiers are not required to be pleasant for humans to read. They may encode module/class ownership, scope, type, source information, or other data required for deterministic symbol identity.
+Compiler-generated identifiers may encode module/class ownership, scope, type, source information, or other data required for deterministic symbol identity. They are not required to be aesthetically pleasant, but generated Bitlang Low must remain inspectable enough that a programmer can trace declarations, control flow, storage, and backend-relevant behavior.
 
 ## 4. Variables
 
