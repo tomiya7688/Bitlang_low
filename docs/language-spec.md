@@ -588,6 +588,51 @@ If the index is only known at runtime, lowering must preserve a bounds check bef
 
 The C backend must not emit unchecked indexing for an access whose validity has not already been proven.
 
+## 16A. Strings and characters
+
+Bitlang Low preserves Bitlang's canonical string semantics.
+
+A `Str` value is a sequence of Unicode scalar values materialized as valid UTF-8.
+
+The minimum ordinary runtime descriptor is semantically equivalent to:
+
+```text
+data        : Ptr<Uint2x8>
+byte_length : Size
+```
+
+The descriptor does not include an implicit trailing NUL byte.
+
+U+0000 may occur inside the data and is an ordinary character.
+
+Character count is the number of decoded Unicode scalar values. A backend may cache that count when useful, but cached character count is representation metadata rather than an additional semantic component of string identity.
+
+Constraints are interpreted as:
+
+```text
+Strxxx<N> -> at most N Unicode scalar values
+Strxx<N>  -> at most N UTF-8 bytes
+Strx<N>   -> encoded byte_length * 8 <= N
+```
+
+A value violating an applicable bound is invalid. Statically provable violations are compile errors; runtime construction/conversion operations must check bounds before producing the constrained string.
+
+`Char` / `Strxxx1` contains exactly one Unicode scalar value and may therefore occupy one to four UTF-8 bytes.
+
+Bitlang Low performs no automatic Unicode normalization.
+
+### C backend
+
+Ordinary Low strings are not C NUL-terminated strings.
+
+The C backend normally uses an explicit pointer-plus-`Size` byte-length representation and must not replace it with bare `char*` semantics.
+
+Conversion to a C NUL-terminated string is an explicit interoperability operation. It must allocate/provide terminator storage and explicitly handle embedded U+0000 according to the target API contract.
+
+### Bitlang VM backend
+
+The VM representation uses guest UTF-8 bytes plus guest `Size` byte length. Host Go string layout and host string internals are not guest semantics.
+
 ## 17. Pointers, references, Address, and unsafe operations
 
 C-like pointer-shaped low-level representation may be used where appropriate.
