@@ -279,7 +279,57 @@ The Bitlang VM Backend lowers these rules into explicit Core control flow/runtim
 
 The C backend may use generated init/fini functions, guard objects/state variables, thread-local helpers, task-context helpers, or equivalent mechanisms. It must not depend on C behavior that does not provide the required deterministic order.
 
-## 15. Class, module, and method lowering
+## 15. Symbol identity, visibility, and backend linkage
+
+Bitlang access visibility and backend/native linkage are separate concepts.
+
+### 15.1 Access-control properties
+
+`Public / Private` and `Protected / Unprotected` are semantic access-control inputs.
+
+After all accesses have been validated and high-level class/module structure has been lowered, those properties may disappear from executable Low when no remaining backend behavior depends on them.
+
+They must not be translated mechanically into C `static`, `extern`, or symbol visibility attributes.
+
+### 15.2 Module export is not native ABI export
+
+Bitlang `Exported / Unexported` describes module-level export visibility.
+
+An `Exported` Bitlang declaration does **not** automatically become a public C/native ABI symbol.
+
+Native/foreign symbol exposure requires the explicit external-ABI contract defined separately.
+
+This prevents an ordinary Bitlang module API from accidentally becoming process-wide C linkage.
+
+### 15.3 Canonical program symbol identity
+
+Any declaration that still requires linkable identity after class/module lowering receives a deterministic canonical Low symbol identity derived from its fully qualified semantic declaration identity.
+
+Capitalization differences that are semantically identical in Bitlang must not produce different Low/backend symbols.
+
+Generated names may be mangled for backend legality, but mangling must be deterministic and collision-free.
+
+### 15.4 Translation units
+
+Splitting generated Low/C into multiple translation units is an implementation/build decision and must not change Low symbol semantics.
+
+A backend may give a symbol translation-unit-local C linkage only when whole-program/backend analysis proves that:
+
+- no other generated translation unit refers to it;
+- no external ABI exposes it;
+- doing so does not change required address identity or reflection/debug behavior.
+
+C `static` used for this backend optimization is unrelated to Bitlang `Static` retention.
+
+Cross-translation-unit internal program references use deterministic generated symbol names/declarations or an equivalent linker representation.
+
+### 15.5 External symbols
+
+Foreign imports/exports, calling conventions, symbol spelling visible outside the Bitlang build, dynamic-library visibility, and ABI stability are governed by the external/native ABI specification.
+
+Until that contract is explicitly selected, ordinary Low declarations are not assumed to be callable by arbitrary C/native code.
+
+## 16. Class, module, and method lowering
 
 High-level class and module containers do not need to survive as runtime language constructs in Bitlang Low.
 
@@ -296,7 +346,7 @@ Module and class ownership information that is still needed for symbol identity 
 
 Nested `struct` values do not need to be flattened field-by-field merely because a class was lowered. Preserving a struct as a struct is the default acceptable representation. Full field flattening is an optimization and is legal only when layout, aliasing, and observable behavior are preserved.
 
-## 16. Functional constructs
+## 17. Functional constructs
 
 Bitlang Low is procedural and must not require a backend to reconstruct high-level functional-language semantics.
 
@@ -310,13 +360,13 @@ Pattern matching and other high-level control constructs must be reduced to ordi
 
 Generics are already fully resolved before this stage. Bitlang Low must not contain unresolved generic parameters, runtime generic substitution, or generic constraint checks. Only the concrete declarations/types produced by preprocessing may remain. Currying syntax and other high-level functional sugar likewise must not be left for the C backend to interpret.
 
-## 17. No Bitlang preprocessor at the Bitlang Low stage
+## 18. No Bitlang preprocessor at the Bitlang Low stage
 
 Bitlang preprocessor functions have already executed before Bitlang Preprocessed is produced and are not part of Bitlang Low runtime or compile-time semantics.
 
 A C backend may generate C preprocessor directives as an implementation technique, but those directives are backend output and are not Bitlang Low preprocessing semantics.
 
-## 18. C backend safety rule
+## 19. C backend safety rule
 
 A behavior that is defined by Bitlang must not be lowered into C in a form whose correctness depends on C undefined behavior.
 
