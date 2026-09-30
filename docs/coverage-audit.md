@@ -31,7 +31,7 @@ This document tracks whether Bitlang Low is sufficient to preserve the semantics
 | Closures / first-class functions | Bitlang | Covered by explicit code target + environment lowering. |
 | Sum/variant/pattern matching | Bitlang | High-level form eliminated; exact optional payload representation remains an implementation/layout choice. |
 | Enum physical representation | C / VM | Covered with explicit canonical underlying Bitlang integer type. |
-| Strings / characters | Bitlang | **Open**: encoding and concrete low-level representation are not yet defined upstream/Low. |
+| Strings / characters | Bitlang / C / VM | Covered: Unicode scalar semantics, UTF-8 materialization, pointer + `Size` byte length, no implicit NUL termination. |
 | External/native ABI | C | Open. |
 | Runtime helper / allocator ABI | C / VM | Open at the ABI/signature level; allocation/release must be explicit, never implicit. |
 | Concurrency / atomics memory model | Bitlang / C / VM | Open. Retention domains alone do not define shared-memory concurrency. |
