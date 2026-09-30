@@ -713,7 +713,32 @@ Unsafe may permit operations such as:
 
 Unsafe does not silently weaken `Ref<T>`; code must use the appropriate raw-pointer/address operation instead.
 
-The exact source spelling of unsafe operations is specified separately. The semantic requirement is that the unsafe intent is explicit and cannot arise accidentally from ordinary C-like syntax.
+Unsafe pointer operations use an explicit `unsafe` block:
+
+```c
+unsafe {
+    value = *raw_ptr;
+    raw_ptr = raw_ptr + offset;
+}
+```
+
+Only operations whose Low specification explicitly permits unsafe relaxation gain that relaxation inside the block.
+
+In particular, `unsafe` does **not** disable:
+
+- ordinary type compatibility;
+- ownership/move state;
+- release/finalization rules;
+- const/access restrictions;
+- explicit cast requirements;
+- array bounds semantics for ordinary array operations;
+- runtime trap semantics unrelated to the permitted raw-pointer operation.
+
+The initial unsafe permissions are limited to the raw-pointer/address operations defined in this section, including unproved dereference/arithmetic and explicit unaligned load/store intrinsics.
+
+Nested `unsafe` blocks have no additional effect.
+
+Compiler-generated canonical Low must retain an explicit `unsafe` block or equivalent explicitly marked unsafe operation node; a backend may not infer unsafe intent from the fact that C would accept the emitted operation.
 
 An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang Low operations remain governed by the defined-behavior and default-error rules.
 
