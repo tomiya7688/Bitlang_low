@@ -375,3 +375,23 @@ When ordinary C cannot express a required defined behavior directly, the backend
 If the target cannot implement the required Bitlang semantics, translation must fail explicitly instead of silently weakening the language contract.
 
 Raw-pointer operations whose own Bitlang semantics intentionally allow unsafe behavior remain subject to the separately defined raw-pointer rules; this section does not invent additional guarantees for them.
+
+
+## 20. Concurrency boundary
+
+The current Bitlang Low core does not define a shared-memory concurrency, thread-creation, atomic-operation, or volatile-memory model.
+
+`Thread_retention` and `Task_retention` specify where retained state is stored. They do not by themselves define:
+
+- how threads/tasks are created or scheduled;
+- which memory locations may be shared;
+- atomicity;
+- happens-before relationships;
+- fences/memory ordering;
+- data-race behavior.
+
+Low therefore does not silently inherit C11/C23 atomics or C `volatile` semantics merely because the C backend can express them.
+
+When Bitlang defines a canonical concurrency model, Low must preserve that model explicitly and the C backend may map it to C atomics/threads only where the selected target provides equivalent semantics.
+
+Until then, C/foreign atomic or volatile access is available only through an explicit external/native ABI or future exact hardware-access contract, not as ordinary portable Low semantics.
