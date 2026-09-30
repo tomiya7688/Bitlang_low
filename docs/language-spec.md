@@ -183,6 +183,14 @@ Numeric overflow behavior is inherited from Bitlang and is an error by default u
 
 Floating-point types follow the same inheritance rule as integer types. Their canonical Bitlang type and already-defined semantics are preserved through Bitlang Low; `float`, `double`, and related C types are backend representation choices only.
 
+### 4.2 Bool
+
+`Bool` is a distinct non-numeric type with semantic values `false` and `true`.
+
+The C backend may use `_Bool` / `bool` when the selected target/dialect provides a compatible representation. Otherwise it must use another representation that preserves exactly the two Low boolean values.
+
+The Bitlang VM Backend may lower `Bool` to a simple integer/register carrier such as 0/1, but that carrier does not make `Bool` implicitly compatible with Low integer types.
+
 ## 5. Assignment
 
 C-style assignment syntax is used.
@@ -210,6 +218,12 @@ The following C-style operators are part of the baseline surface where the opera
 ```
 
 Unary `+` and `-` use C-like syntax.
+
+Comparison operators produce `Bool`.
+
+Bitwise operators are written in the C form where the operand type supports them. Logical operators `&&`, `||`, and `!` operate on `Bool` only.
+
+Bitlang Low does not inherit C scalar truthiness: integers, pointers, enums, addresses, strings, and other values must not be used directly as boolean conditions without an explicit comparison/conversion.
 
 Bitwise and logical operators are also written in the C form:
 
@@ -321,6 +335,8 @@ for a `void` function.
 
 C-style `if`, `else if`, and `else` syntax is used.
 
+The condition expression must have type `Bool`. No C-style implicit conversion from a scalar value to boolean is performed.
+
 ```c
 if (value > 0) {
     positive();
@@ -355,6 +371,8 @@ C-compatible fallthrough behavior may be reused unless a later Bitlang-specific 
 
 ### while
 
+The condition must have type `Bool`.
+
 ```c
 while (condition) {
     work();
@@ -363,6 +381,8 @@ while (condition) {
 
 ### do-while
 
+The condition must have type `Bool`.
+
 ```c
 do {
     work();
@@ -370,6 +390,8 @@ do {
 ```
 
 ### for
+
+When present, the loop condition must have type `Bool`.
 
 ```c
 for (Int10x32 i = 0; i < count; i++) {
