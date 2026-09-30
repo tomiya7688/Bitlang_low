@@ -10,7 +10,7 @@ This document records the C-compatible surface and the Bitlang-specific rules th
 
 A foundational exception is the numeric type system: Bitlang Low inherits Bitlang's canonical numeric type model, including integer and floating-point types, instead of redefining numeric semantics around C primitive types. See [`numeric-types.md`](numeric-types.md).
 
-Bitlang-specific ownership, lifetime, property, reference, class/module, and functional lowering rules are defined in [`semantic-lowering.md`](semantic-lowering.md). Remaining non-C decisions are tracked in [`open-decisions.md`](open-decisions.md).
+Bitlang-specific ownership, lifetime, property, reference, class/module, and functional lowering rules are defined in [`semantic-lowering.md`](semantic-lowering.md). Target-dependent physical representation is defined by [`target-model.md`](target-model.md). Remaining non-C decisions are tracked in [`open-decisions.md`](open-decisions.md).
 
 ## Bitlang Low is a programming language, not an IR-only format
 
@@ -227,11 +227,31 @@ Shift operators act on the value's fixed semantic bit width rather than on a C c
 
 For a value of semantic width `W`, the shift count must satisfy `0 <= count < W`. A statically provable invalid count is a compile error; a dynamically determined count must be checked before the operation and becomes a runtime error when invalid.
 
-`value << count` shifts the fixed-width bit representation left, inserts zero bits on the low side, and discards bits shifted beyond the high end.
+Bitlang Low preserves the Bitlang distinction between **checked** and **discard** bit shifts. Canonical generated Low uses explicit intrinsics when that distinction matters:
 
-`value >> count` shifts right. Unsigned values use a logical right shift with zero fill. Signed values use a deterministic arithmetic right shift that preserves the sign by filling from the sign side.
+```text
+bit_shift_left_checked
+bit_shift_left_discard
+bit_shift_right_zero_checked
+bit_shift_right_zero_discard
+bit_shift_right_sign_checked
+bit_shift_right_sign_discard
+```
 
-Bits discarded by either shift do not themselves produce numeric overflow. Shift is a bit-representation operation, not shorthand for checked multiplication or division by a power of two. Arithmetic that requires numeric overflow checking must use the corresponding arithmetic operation.
+The C-like operators are human-facing shorthand for the discard forms:
+
+```text
+value << count
+value >> count
+```
+
+`<<` zero-fills from the low side and explicitly permits bits leaving the high side to be discarded.
+
+For `>>`, unsigned operands use zero-fill and signed operands use deterministic sign-fill; low bits leaving the semantic width are explicitly discarded.
+
+A checked shift must not be silently rewritten to `<<` or `>>`. If its canonical Bitlang loss condition is violated, a statically known violation is a compile error and a runtime-dependent violation uses the ordinary trap path.
+
+Shift is a bit-representation operation, not shorthand for checked multiplication or division by a power of two. Radix/digit shifting remains a separate numeric operation.
 
 The result retains the original semantic numeric type, including its bit width, radix, and signedness. No C integer promotion is introduced.
 
@@ -444,7 +464,9 @@ Full field flattening is an optimization only when all struct layout, address, a
 
 ## 15. enum
 
-C-style enumeration syntax is part of the baseline surface.
+Bitlang Low enums are nominal integer-backed types with a deterministic canonical underlying Bitlang integer type.
+
+Human-authored Low may use C-like syntax and may omit the underlying type:
 
 ```c
 enum State {
@@ -454,7 +476,33 @@ enum State {
 };
 ```
 
-The deterministic underlying Bitlang numeric representation remains to be defined separately when enum range, storage, or ABI is observable.
+When omitted, the Low default underlying type is:
+
+```text
+Int10x32
+```
+
+Canonical compiler-generated Low and canonical formatter output must make the underlying type explicit. The canonical spelling follows the fixed-underlying-type form:
+
+```c
+enum State : Int10x32 {
+    STATE_IDLE = 0,
+    STATE_RUNNING = 1,
+    STATE_STOPPED = 2
+};
+```
+
+Enumerator values use C-like constant rules: the first omitted value is zero and each later omitted value is the previous value plus one. Explicit duplicate numeric values are permitted.
+
+Every enumerator value must be representable by the declared underlying Bitlang integer type. Failure to fit is a compile error; values are never silently widened or wrapped.
+
+The enum remains a distinct semantic type. Bitlang Low does not inherit C integer promotions or implicit enum-to-integer conversion. Conversion to/from the underlying integer type must be explicit.
+
+The enum's storage size, alignment, and physical representation are those of the selected backend representation of its explicit underlying type.
+
+For the C backend, a fixed-underlying-type C enum may be emitted when the selected C dialect/ABI preserves the exact contract. Otherwise the backend may lower the enum to a typedef/constant representation or another defined C representation while preserving Low type checking before emission.
+
+The Bitlang VM Backend lowers enum values directly through the explicit underlying integer representation and does not need a separate VM enum primitive.
 
 ## 16. Arrays
 
@@ -568,7 +616,13 @@ The exact source spelling of unsafe operations is specified separately. The sema
 
 An unsafe operation is allowed to rely on target/backend-specific low-level behavior only where that operation's contract explicitly permits it. Ordinary Bitlang Low operations remain governed by the defined-behavior and default-error rules.
 
-The exact textual spelling used for `Ptr<T>` versus `Ref<T>` inside canonical Bitlang Low output remains a separate syntax decision.
+Canonical Bitlang Low retains `Ptr<T>` and `Ref<T>` as distinct type spellings.
+
+For C familiarity, a human-authored Low parser may accept C-style `T*` as surface shorthand for `Ptr<T>`. It is never shorthand for `Ref<T>`.
+
+Canonical formatter/compiler-generated Low normalizes pointer types back to `Ptr<T>` and preserves `Ref<T>` explicitly so the audit boundary does not hide reference safety semantics.
+
+A C backend may later lower both to pointer-shaped storage where valid, but only after the already-defined `Ref<T>` guarantees have been validated.
 
 ## 18. Function pointers
 
