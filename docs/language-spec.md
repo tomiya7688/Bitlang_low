@@ -2,7 +2,7 @@
 
 Status: Draft
 
-Bitlang Low is a C-like low-level language positioned between `Bitlang preprocessed` and backend representations such as C.
+Bitlang Low is a C-like low-level programming language positioned between `Bitlang Explicit` and backend representations such as C in the normal generated pipeline. It may also be written and compiled directly by humans.
 
 The baseline rule is simple: when ordinary C syntax and semantics can be reused without conflicting with Bitlang Low requirements, they are reused directly.
 
@@ -11,6 +11,30 @@ This document records the C-compatible surface and the Bitlang-specific rules th
 A foundational exception is the numeric type system: Bitlang Low inherits Bitlang's canonical numeric type model, including integer and floating-point types, instead of redefining numeric semantics around C primitive types. See [`numeric-types.md`](numeric-types.md).
 
 Bitlang-specific ownership, lifetime, property, reference, class/module, and functional lowering rules are defined in [`semantic-lowering.md`](semantic-lowering.md). Remaining non-C decisions are tracked in [`open-decisions.md`](open-decisions.md).
+
+## Bitlang Low is a programming language, not an IR-only format
+
+Bitlang Low is a first-class programming language.
+
+Its use as a compiler-generated lowering target does not make it an implementation-private IR, serialized AST, or compiler-only artifact.
+
+A conforming implementation must be able to accept valid human-authored Bitlang Low source and process it according to the Bitlang Low specification.
+
+Human-authored and compiler-generated Bitlang Low share the same language semantics. The compiler must not rely on hidden assumptions that only its own generator could satisfy unless those assumptions are made explicit as part of the Bitlang Low language contract.
+
+Direct Bitlang Low source enters at the Bitlang Low validation/backend boundary:
+
+```text
+human-authored Bitlang Low
+    -> parse + semantic validation
+    -> C / assembly / another backend
+```
+
+It does not need to be reverse-engineered into Bitlang source or Bitlang Explicit first.
+
+Bitlang Low may remain intentionally lower-level, stricter, and less convenient than ordinary Bitlang. Human writability means the language is completely specified and valid to author directly; it does not require compiler-generated output to prioritize readability.
+
+This preserves the Bitlang family design goal that programmers can choose a writing style and abstraction level rather than being forced to use only the highest-level frontend.
 
 ## Backend complexity is intentional
 
