@@ -95,5 +95,6 @@ A major intentional exception is the numeric type system. Bitlang Low retains Bi
 - [`docs/target-model.md`](docs/target-model.md) — target descriptor / C and VM physical data-model contract
 - [`docs/runtime-helper-abi.md`](docs/runtime-helper-abi.md) — allocation, release, trap, and runtime-helper semantic ABI
 - [`docs/c-abi.md`](docs/c-abi.md) — explicit C/native import/export ABI boundary
+- [`docs/exact-layout.md`](docs/exact-layout.md) — deterministic protocol/hardware/packed bit layout
 - [`docs/coverage-audit.md`](docs/coverage-audit.md) — Bitlang / C / VM semantic coverage audit
 - [`docs/open-decisions.md`](docs/open-decisions.md) — remaining decisions that cannot simply inherit C behavior
