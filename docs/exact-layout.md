@@ -18,7 +18,7 @@ An exact-layout struct defines:
 - fields with exact bit offsets;
 - field types whose semantic bit representation/width is fully defined.
 
-Illustrative canonical form:
+Canonical form:
 
 ```text
 exact struct Header byte_order(little) bit_order(lsb0) align(1) {
@@ -28,7 +28,15 @@ exact struct Header byte_order(little) bit_order(lsb0) align(1) {
 }
 ```
 
-The exact parser spelling may use the equivalent canonical attribute grammar adopted by the Low frontend; the semantic fields above are mandatory.
+The spelling above is the canonical Low syntax.
+
+- `exact struct` selects exact layout.
+- `byte_order(little|big)` is mandatory.
+- `bit_order(lsb0|msb0)` is mandatory.
+- `align(SizeLiteral)` is optional and defaults to 1.
+- each field carries `@bit(NonNegativeConstant)`.
+
+Canonical formatting always emits byte order, bit order, alignment, and every field bit offset explicitly.
 
 ## 2. Field width
 
