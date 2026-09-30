@@ -22,30 +22,13 @@ Internal generated code may use backend-private representations, but interoperab
 
 Internal compilation does not need to use the external ABI representation unless a symbol crosses an ABI boundary.
 
-## 2. Strings and characters
-
-Bitlang defines `Str` and bounded string forms independently from C strings.
-
-Bitlang Low still needs a concrete low-level semantic contract for:
-
-- character encoding,
-- length unit,
-- whether storage is null-terminated,
-- whether length is stored explicitly,
-- representation of bounded and unbounded strings,
-- ownership of string storage,
-- C-string conversion behavior,
-- `Char` / `Str1x1` backend representation.
-
-This must be decided before C ABI mapping can be stable.
-
-## 3. Concurrency and atomics
+## 2. Concurrency and atomics
 
 If Bitlang Low exposes `volatile`, atomic operations, threads, or shared-memory concurrency, their memory model must be defined explicitly.
 
 Ordinary C syntax may be reused where compatible, but the Bitlang contract must establish which C/C11/C23 memory-model behavior is intentionally inherited and which behavior is restricted.
 
-## 4. Explicit layout / bit-field facility
+## 3. Explicit layout / bit-field facility
 
 Ordinary arbitrary-bit-width numeric values should not be represented as C bit-fields merely because their semantic width is unusual.
 
@@ -64,7 +47,7 @@ If added, it needs rules for:
 This should remain separate from the ordinary `Int<Radix>x<BitWidth>` / `Uint<Radix>x<BitWidth>` type system.
 
 
-## 5. Runtime helper / allocator ABI
+## 4. Runtime helper / allocator ABI
 
 Bitlang Low requires explicit runtime/helper operations for behavior that is not represented as ordinary C syntax or a direct machine operation.
 
