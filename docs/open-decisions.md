@@ -6,29 +6,13 @@ This document lists only decisions that cannot be inherited mechanically from or
 
 C-compatible syntax and behavior do not need a separate Bitlang Low decision unless they conflict with Bitlang semantics.
 
-## 1. External ABI and symbol contract
-
-Internal generated code may use backend-private representations, but interoperability with C or other native code requires explicit rules for:
-
-- calling convention,
-- exported symbol naming/mangling,
-- parameter and return layout,
-- arbitrary-bit-width numeric types,
-- strings,
-- Optional/nullable representations,
-- structs and alignment,
-- ownership responsibility across the boundary,
-- error/failure propagation across the boundary.
-
-Internal compilation does not need to use the external ABI representation unless a symbol crosses an ABI boundary.
-
-## 2. Concurrency and atomics
+## 1. Concurrency and atomics
 
 If Bitlang Low exposes `volatile`, atomic operations, threads, or shared-memory concurrency, their memory model must be defined explicitly.
 
 Ordinary C syntax may be reused where compatible, but the Bitlang contract must establish which C/C11/C23 memory-model behavior is intentionally inherited and which behavior is restricted.
 
-## 3. Explicit layout / bit-field facility
+## 2. Explicit layout / bit-field facility
 
 Ordinary arbitrary-bit-width numeric values should not be represented as C bit-fields merely because their semantic width is unusual.
 
