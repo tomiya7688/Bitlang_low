@@ -933,14 +933,15 @@ Therefore, the C backend may not use undefined behavior as an optimization assum
 
 This policy does not automatically adopt C implementation-defined behavior either. Where implementation-defined C behavior is observable and Bitlang has not explicitly adopted it, Bitlang Low must either define its own behavior, lower through a deterministic helper/representation, or reject the operation.
 
-## 29. Remaining Bitlang-specific decisions
+## 29. Remaining specification boundary
 
-The remaining decisions that cannot simply inherit C behavior are tracked in [`open-decisions.md`](open-decisions.md). The major unresolved areas are:
+There are currently no unresolved **Bitlang Low-owned** semantic items tracked in `open-decisions.md`.
 
-- external C/native ABI and symbol contract,
-- Bitlang string/character low-level representation,
-- concurrency/atomic memory model,
-- exact-layout / bit-field facility for protocols, hardware, and ABI-specific layouts,
-- runtime helper / allocator ABI.
+Two important upstream Bitlang semantics remain blockers for complete cross-backend conformance:
 
-Until one of these areas is explicitly defined, similarity to C syntax does not imply that C implementation-defined behavior becomes Bitlang semantics. C undefined behavior is already rejected by the general policy above unless an explicit Bitlang unsafe/backend-specific exception is defined.
+- the complete `Float<Radix>x<BitWidth>` representation/rounding/exceptional-value contract;
+- a future shared-memory concurrency/atomics model.
+
+Until those upstream semantics are defined, Low and its backends must not invent C- or Go-specific behavior for them.
+
+The living cross-stage status is tracked in [`coverage-audit.md`](coverage-audit.md).
