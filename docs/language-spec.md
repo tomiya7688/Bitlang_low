@@ -639,6 +639,27 @@ Conversion to a C NUL-terminated string is an explicit interoperability operatio
 
 The VM representation uses guest UTF-8 bytes plus guest `Size` byte length. Host Go string layout and host string internals are not guest semantics.
 
+### `x*` string constraints and zero-bit strings
+
+`Strx*` expresses no encoded-bit limit. A plain unconstrained `Str` denotes the same type; `Strxx*` normalizes to `Strx*` in preprocessing, and unconstrained `Strxxx*` does not add a character limit. The wildcard `*` is not a numeric width, heap pointer, or implicit infinite allocation.
+
+`Strx0` (`Strxx0` after canonicalization) and `Strxxx0` remain **finite zero constraints** and can hold only the empty UTF-8 string. They are valid empty-only string types and retain the declaration-warning and overflow rules stated above. Their ordinary runtime descriptor may occupy physical bytes even though encoded content has zero bits. The compiler must never interpret a computed zero bound as `*`.
+
+## 16B. Zero-sized values, arrays, and aggregates
+
+Zero-size **semantic payloads** are allowed when their type family defines a valid zero payload. This is distinct from unbounded `x*` and from physical storage/ABI size.
+
+- `Strx0` has 0 bits of encoded string data but may still be represented by `Ptr<Uint2x8>` plus `Size` length.
+- A fixed `Array<T, Length=0>` has zero elements and no element payload; every index access is out of bounds. Runtime-length `Array<T>` may have length 0, but retains its runtime descriptor.
+- `struct Empty { }` is a valid zero-field aggregate with one unit-like semantic value and no field payload.
+- An array of `N` zero-payload elements still has `N` logical elements, including normal bounds checks, even when its backing element bytes/stride are zero.
+
+Neither zero-payload values nor their arrays guarantee unique physical addresses, and they do not implicitly require heap allocation. Backends may use a target-specific nonzero carrier/sentinel when required, but must not expose invented padding as semantic fields. If object identity, `Ref<T>` validity, borrowing, lifetime, or release is observable, it must still be preserved, not inferred from an unallocated/aliased backing pointer. Arithmetic on a zero-sized element's physical address must not substitute for logical indexing.
+
+`sizeof` reports the selected target representation's physical size and may differ from semantic payload size. Foreign ABI representation of empty structs/zero arrays must be explicit and proven compatible or use a wrapper. Deterministic exact-layout types follow the separate `exact-layout.md` rule; do not assume portable C supports zero-size objects.
+
+Zero-size numeric/Bool forms (e.g. `Int10x0`, `Uint10x0`, `Float10x0`, `Boolx0`) are invalid rather than unlimited. Any `x*` type whose semantic value has dynamically variable width cannot be laid out as a fixed-width inline field without a defined runtime descriptor/indirection.
+
 ## 17. Pointers, references, Address, and unsafe operations
 
 C-like pointer-shaped low-level representation may be used where appropriate.
