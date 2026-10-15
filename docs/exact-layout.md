@@ -93,6 +93,14 @@ Physical byte size is:
 ceil(bitsizeof(layout) / 8)
 ```
 
+An `exact struct` with **no fields** is valid and has semantic `bitsizeof == 0` and exact-layout materialized byte size `0`. It contains a single unit-like zero-payload value. Its declared byte-order/bit-order and alignment syntax remain canonical, but may have no observable data effect when no bytes exist.
+
+A fixed array of length zero inside an exact struct contributes zero bits. An array with a positive element count and zero-size elements contributes zero bits yet retains its logical element count. Zero-payload elements do not establish separate physical addresses or a nonzero stride; validators must still enforce index bounds and preserve any observable identity/lifetime/borrow rules outside the serialized representation.
+
+Unbounded `x*` types have no finite statically known semantic bit width and therefore **cannot be direct inline exact-layout fields**, just like runtime-length arrays/strings. They must use an explicitly specified fixed-layout descriptor/indirection if an exact layout needs to refer to them.
+
+A C backend must preserve exact zero-byte serialization/materialization and `bitsizeof == 0` even if the chosen C representation needs a nonzero-size placeholder. Ordinary C `sizeof` of such a placeholder must not be substituted for the exact-layout byte count. A zero-byte exact struct is not implicitly a portable, directly C-ABI-compatible empty C struct.
+
 The unused high bits of the final physical byte, when the total bit size is not byte-aligned, are not addressable fields and must be written as zero by deterministic serialization/materialization.
 
 `bitsizeof` returns the exact semantic layout bit count. `sizeof` returns the physical byte count.
