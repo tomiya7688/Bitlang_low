@@ -617,6 +617,12 @@ Strx<N>   -> encoded byte_length * 8 <= N
 
 A value violating an applicable bound is invalid. Statically provable violations are compile errors; runtime construction/conversion operations must check bounds before producing the constrained string.
 
+String bounds are maximum lengths, not exact stored lengths; valid UTF-8 lengths are multiples of eight bits. A `Strx3` can contain the empty string, but no non-empty string. Declaring an empty-only constrained `Str` type is legal and requires a compiler warning rather than a declaration error.
+
+Canonical string constraints participate in type identity. There is **no implicit conversion between different constrained `Str` types**, including widening: a direct `Strx8 -> Strx3` assignment and a direct `Strx8 -> Strx16` assignment both fail static type checking regardless of the actual runtime value. By contrast, `Strxx1` normalizes to the same canonical constraint as `Strx8`.
+
+A cross-constraint conversion must be explicit and checked. Failure to fit any destination bit/byte/character bound is **string capacity overflow**. If statically certain, emit a compile-time overflow error; otherwise, the relevant runtime construction, cast, or string modification must check before producing the constrained result and use the ordinary runtime overflow/trap path on failure. Never truncate or wrap silently. A valid same-type source `Strx3` already carries the invariant, which must have been enforced when that value was produced.
+
 `Char` / `Strxxx1` contains exactly one Unicode scalar value and may therefore occupy one to four UTF-8 bytes.
 
 Bitlang Low performs no automatic Unicode normalization.
