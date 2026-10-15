@@ -29,6 +29,26 @@ Float10x64
 
 The radix and bit width are part of the type itself. They must not be reconstructed from a target C implementation's `int`, `long`, `float`, `double`, pointer size, or ABI defaults.
 
+### Unbounded `x*` and zero-width `x0`
+
+For width-bearing numeric families, `x*` means **no fixed semantic bit-width limit**. It is distinct from every fixed `x<W>` type. It is never an integer zero, a pointer-only representation, or an instruction to allocate infinite physical storage.
+
+```text
+Int10x*     -> signed arbitrary-precision radix-10 integer
+Uint10x*    -> unsigned arbitrary-precision radix-10 integer
+Int10x0     -> invalid type (zero-width signed integer)
+Uint10x0    -> invalid type (zero-width unsigned integer)
+Float10x0   -> invalid type
+```
+
+The ordinary source `Int` still defaults to finite `Int10x32`. `xx*` source shorthand normalizes to `x*` without treating it as a number. `xx0` normalizes to `x0`, **not** `x*`. A computed zero width is not a wildcard.
+
+An unbounded integer is a mathematically arbitrary-precision value, not a fixed-width two's-complement bit vector. Finite-width formulas and bounded-shift counts that depend on a finite W must not be applied using an invented W. Implementations must establish the unbounded bitwise/shift semantics explicitly, preserve the radix and signedness, and use dynamic multi-word/library/runtime operations where necessary. Allocation/resource exhaustion is a defined failure, not numeric overflow or permission to truncate.
+
+`Float<Radix>x*` reserves the same no-fixed-width suffix spelling, but is not accepted for compilation before a canonical unbounded floating precision/rounding/exponent model is defined. Low and C/VM backends must reject it until the upstream semantics exist; they must never substitute host `double`, native `long double`, or a hidden finite precision.
+
+An `x*` value cannot be placed directly into an exact-layout field or a fixed-width ABI slot: those layouts require a finite known width. An explicit pointer/descriptor/helper representation may be used only with a defined target ABI and full semantic preservation.
+
 ## Relationship to Bitlang source and preprocessed
 
 Source-level shorthand, defaults, inferred types, and explicitly configured conversion automation are resolved before Bitlang Low is produced.
